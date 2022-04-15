@@ -2,6 +2,9 @@
 const express = require('express');
 const app = express();
 
+// database setup
+const db = require('./database/connection').connection;
+
 // setup static dir
 app.use(express.static(`${__dirname}`));
 
