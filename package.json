@@ -1,0 +1,24 @@
+{
+  "name": "roll-call",
+  "version": "1.0.0",
+  "description": "Mandatory 2 for class development of large systems",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dprzygocka/roll-call.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dprzygocka/roll-call/issues"
+  },
+  "homepage": "https://github.com/dprzygocka/roll-call#readme",
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "mysql2": "^2.3.3"
+  }
+}
