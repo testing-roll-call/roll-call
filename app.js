@@ -2,6 +2,10 @@
 const express = require('express');
 const app = express();
 
+// Utils class
+const { Utils } = require('./models/Utils');
+const Utilities = new Utils();
+
 // database setup
 const db = require('./database/connection').connection;
 
@@ -17,6 +21,19 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/', (req, res) => {
     res.sendFile(`${__dirname}/index.html`);
 });
+
+const classAttendanceCode = {};
+
+app.get('/attendanceCode', (req, res) => {
+  const classTeacherId = req.body.classTeacherId;
+  let code;
+  // prevent duplicate codes
+  do {
+      code = Utilities.generateCode(10);
+  } while (classAttendanceCode[code])
+  classAttendanceCode[code] = classTeacherId;
+  res.send({code: code})
+})
 
 const PORT = process.env.PORT || 8080;
 /* eslint-disable no-debugger, no-console */
