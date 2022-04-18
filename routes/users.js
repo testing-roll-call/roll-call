@@ -4,6 +4,12 @@ const bcrypt = require("bcrypt");
 const { User } = require('../models/User');
 
 router.post('/api/users/register', (req, res) => {
+    if (!req.body.userRole || (req.body.userRole !== 'TEACHER' && ratingType !== 'STUDENT')) {
+        res.send({
+            message: 'Please choose the role: TEACHER or STUDENT.',
+        });
+        return;
+    }
     bcrypt.hash(req.body.password, saltRounds, (error, hash) => {
         if (!error) {
             pool.getConnection((err, db) => {
