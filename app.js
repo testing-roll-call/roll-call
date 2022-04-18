@@ -2,12 +2,15 @@
 const express = require('express');
 const app = express();
 
+const cors = require('cors')
+app.use(cors({origin: "*"})); // https://www.youtube.com/watch?v=PNtFSVU-YTI
+
 // database setup
 const { pool } = require('./database/connection');
 
 
 // setup static dir
-app.use(express.static(`${__dirname}`));
+// app.use(express.static(`${__dirname}`));
 
 // allows to recognise incoming object as json object
 app.use(express.json());
@@ -16,7 +19,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
-    res.sendFile(`${__dirname}/index.html`);
+  const object = {key: 'response from api'};
+    res.send(object);
 });
 
 const PORT = process.env.PORT || 8080;
