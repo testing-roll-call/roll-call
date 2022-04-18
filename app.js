@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 
 // database setup
-const { pool } = require('./database/connection');
+const db = require('./database/connection').connection;
 
 
 // setup static dir
