@@ -2,9 +2,10 @@ const router = require('express').Router();
 const { pool } = require('../database/connection');
 const bcrypt = require("bcrypt");
 const { User } = require('../models/User');
+const saltRounds = 15;
 
 router.post('/api/users/register', (req, res) => {
-    if (!req.body.userRole || (req.body.userRole !== 'TEACHER' && ratingType !== 'STUDENT')) {
+    if (!req.body.userRole || (req.body.userRole !== 'TEACHER' && req.body.userRole !== 'STUDENT')) {
         res.send({
             message: 'Please choose the role: TEACHER or STUDENT.',
         });
@@ -13,8 +14,8 @@ router.post('/api/users/register', (req, res) => {
     bcrypt.hash(req.body.password, saltRounds, (error, hash) => {
         if (!error) {
             pool.getConnection((err, db) => {
-                let query = 'INSERT INTO users (user_role, email, password) VALUES (?, ?, ?)';
-                db.query(query, [req.body.userRole, req.body.email, hash], (error, result, fields) => {
+                let query = 'INSERT INTO users (user_role, email, password, first_name, last_name) VALUES (?, ?, ?, ?, ?)';
+                db.query(query, [req.body.userRole, req.body.email, hash, req.body.firstName, req.body.lastName], (error, result, fields) => {
                     if (result && result.affectedRows === 1) {
                         res.send({
                             message: 'User successfully added.',
@@ -43,7 +44,8 @@ router.post('/api/users/login', (req, res) => {
                 bcrypt.compare(req.body.password, result[0].password, (error, match) => {
                     if (match) {
                         res.send({
-                            message: 'User logged in.',
+                            role: result[0].user_role,
+                            email: result[0].email,
                         });
                     } else {
                         res.status(401).send({
