@@ -76,7 +76,7 @@ async function getTeacher(db, teacher_id) {
     return result;
 }
 
-router.get('/api/users/attendance/:userId', (req, res) => {
+router.get('/api/users/attendance/student/:userId', (req, res) => {
     pool.getConnection((err, db) => {
         let query = 'SELECT users.first_name, users.last_name, teachers_classes.start_date_time, teachers_classes.teacher_id, classes.name, attendance.is_attending from users join attendance on users.user_id = attendance.user_id join teachers_classes on attendance.class_teacher_id = teachers_classes.class_teacher_id join classes on classes.class_id = teachers_classes.class_id where users.user_id = ?;';
         db.query(query, [req.params.userId], async (error, result, fields) => {
