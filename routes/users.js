@@ -65,7 +65,7 @@ router.post('/api/users/login', (req, res) => {
 });
 
 async function getTeacher(db, teacher_id) {
-    const ratings = [];
+    const teachers = [];
     const result = await new Promise((resolve, reject) => db.query('SELECT users.first_name, users.last_name FROM users  where users.user_id = ?;', teacher_id, (error, result, fields) => {
       if (error) {
         reject(error);
@@ -78,17 +78,17 @@ async function getTeacher(db, teacher_id) {
 
 router.get('/api/users/attendance/student/:userId', (req, res) => {
     pool.getConnection((err, db) => {
-        let query = 'SELECT users.first_name, users.last_name, teachers_classes.start_date_time, teachers_classes.teacher_id, classes.name, attendance.is_attending from users join attendance on users.user_id = attendance.user_id join teachers_classes on attendance.class_teacher_id = teachers_classes.class_teacher_id join classes on classes.class_id = teachers_classes.class_id where users.user_id = ?;';
+        let query = 'SELECT users.first_name, users.last_name, teachers_classes.start_date_time, teachers_classes.teacher_id, classes.name, attendance.is_attending, courses.name AS courseName from users join attendance on users.user_id = attendance.user_id join teachers_classes on attendance.class_teacher_id = teachers_classes.class_teacher_id join courses on courses.courses_id = teachers_classes.courses_id join classes on classes.class_id = teachers_classes.class_id where users.user_id = ?;';
         db.query(query, [req.params.userId], async (error, result, fields) => {
             if (result && result.length) { 
                 const attendance = [];
                 for (const r of result) {
                     //create new object
-                    let entry = { firstName: r.first_name, lastName: r.last_name, classStartDate: r.start_date_time, teacher_name: r.teacher_id, teacher_surnmae: r.teacher_id, className: r.name, isAttending: r.is_attending};
+                    let entry = { firstName: r.first_name, lastName: r.last_name, classStartDate: r.start_date_time, teacher_name: r.teacher_id, teacher_surname: r.teacher_id, className: r.name, courseName: r.courseName, isAttending: r.is_attending};
                     result = await getTeacher(db, r.teacher_id);
                     if (result && result.length) {
                         entry.teacher_name = result[0].first_name;
-                        entry.teacher_surnmae = result[0].last_name;
+                        entry.teacher_surname = result[0].last_name;
                         attendance.push(entry);
                     }
                 }
