@@ -14,8 +14,8 @@ router.post('/api/users/register', (req, res) => {
     bcrypt.hash(req.body.password, saltRounds, (error, hash) => {
         if (!error) {
             pool.getConnection((err, db) => {
-                let query = 'INSERT INTO users (user_role, email, password, first_name, last_name) VALUES (?, ?, ?, ?, ?)';
-                db.query(query, [req.body.userRole, req.body.email, hash, req.body.firstName, req.body.lastName], (error, result, fields) => {
+                let query = 'INSERT INTO users (user_role, email, password, first_name, last_name, class_id) VALUES (?, ?, ?, ?, ?, ?)';
+                db.query(query, [req.body.userRole, req.body.email, hash, req.body.firstName, req.body.lastName, req.body.classId], (error, result, fields) => {
                     if (result && result.affectedRows === 1) {
                         res.send({
                             message: 'User successfully added.',
@@ -125,6 +125,22 @@ function handleStudentStats(attendance) {
     });
     return userStats;
 }
+
+router.get('/api/users/student/:classId', (req, res) => {
+    pool.getConnection((err, db) => {
+        let query = 'SELECT COUNT(users.email) AS studentCount from users join classes on users.class_id = classes.class_id where classes.class_id = ?;';
+        db.query(query, [req.params.classId], async (error, result, fields) => {
+            if (result && result.length) {
+                res.send(result[0]);
+            } else {
+                res.send({
+                    message: 'Something went wrong',
+                });
+            }
+        });
+        db.release();
+    });
+});
 
 module.exports = {
     router,
