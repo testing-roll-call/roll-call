@@ -78,7 +78,7 @@ async function getTeacher(db, teacher_id) {
 
 router.get('/api/users/attendance/student/:userId', (req, res) => {
     pool.getConnection((err, db) => {
-        let query = 'SELECT users.first_name, users.last_name, teachers_classes.start_date_time, teachers_classes.teacher_id, classes.name, attendance.is_attending, courses.name AS courseName from users join attendance on users.user_id = attendance.user_id join teachers_classes on attendance.class_teacher_id = teachers_classes.class_teacher_id join courses on courses.courses_id = teachers_classes.courses_id join classes on classes.class_id = teachers_classes.class_id where users.user_id = ?;';
+        let query = 'SELECT users.first_name, users.last_name, teachers_classes.start_date_time, teachers_classes.teacher_id, classes.name, attendance.is_attending, courses.name AS courseName from users join attendance on users.user_id = attendance.user_id join teachers_classes on attendance.class_teacher_id = teachers_classes.class_teacher_id join courses on courses.course_id = teachers_classes.course_id join classes on classes.class_id = teachers_classes.class_id where users.user_id = ?;';
         db.query(query, [req.params.userId], async (error, result, fields) => {
             if (result && result.length) { 
                 const attendance = [];
@@ -92,7 +92,7 @@ router.get('/api/users/attendance/student/:userId', (req, res) => {
                         attendance.push(entry);
                     }
                 }
-                res.send(attendance);
+                res.send(handleStudentStats(attendance));
             } else {
                 res.send({
                     message: 'Something went wrong',
@@ -102,6 +102,29 @@ router.get('/api/users/attendance/student/:userId', (req, res) => {
         db.release();
     });
 });
+
+function handleStudentStats(attendance) {
+    const userStats = {
+        "firstName": attendance[0].firstName,
+        "lastName": attendance[0].lastName
+    }
+    attendance.map(value => {
+        if (userStats[value.courseName]) {
+            ++userStats[value.courseName][0];
+            value.isAttending ? ++userStats[value.courseName][1] : '';
+        } else {
+            userStats[value.courseName] = [];
+            userStats[value.courseName][0] = 1;
+            userStats[value.courseName][1] = value.isAttending ? 1 : 0;
+        }
+    });
+    Object.keys((userStats)).forEach(key => {
+        if (key !== 'firstName' && key !== 'lastName') {
+            userStats[key] = Number.parseFloat(userStats[key][1]/userStats[key][0] *100).toFixed(2);
+        }
+    });
+    return userStats;
+}
 
 module.exports = {
     router,
