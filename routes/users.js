@@ -76,7 +76,7 @@ async function getTeacher(db, teacher_id) {
     return result;
 }
 
-router.get('/api/users/attendance/student/:userId', (req, res) => {
+router.get('/api/users/students/attendance/:userId', (req, res) => {
     pool.getConnection((err, db) => {
         let query = 'SELECT users.first_name, users.last_name, teachers_classes.start_date_time, teachers_classes.teacher_id, classes.name, attendance.is_attending, courses.name AS courseName from users join attendance on users.user_id = attendance.user_id join teachers_classes on attendance.class_teacher_id = teachers_classes.class_teacher_id join courses on courses.course_id = teachers_classes.course_id join classes on classes.class_id = teachers_classes.class_id where users.user_id = ?;';
         db.query(query, [req.params.userId], async (error, result, fields) => {
@@ -126,12 +126,33 @@ function handleStudentStats(attendance) {
     return userStats;
 }
 
-router.get('/api/users/student/:classId', (req, res) => {
+router.get('/api/users/students/:classId', (req, res) => {
     pool.getConnection((err, db) => {
         let query = 'SELECT COUNT(users.email) AS studentCount from users join classes on users.class_id = classes.class_id where classes.class_id = ?;';
         db.query(query, [req.params.classId], async (error, result, fields) => {
             if (result && result.length) {
                 res.send(result[0]);
+            } else {
+                res.send({
+                    message: 'Something went wrong',
+                });
+            }
+        });
+        db.release();
+    });
+});
+
+router.get('/api/users/courses/:teacherId', (req, res) => {
+    pool.getConnection((err, db) => {
+        var today = new Date();
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+        var yyyy = today.getFullYear();
+        let query = 'SELECT courses.name, teachers_classes.start_date_time from courses join teachers_classes on courses.course_id = teachers_classes.course_id where teachers_classes.teacher_id = ? AND DATE(teachers_classes.start_date_time) = ?;';
+        db.query(query, [req.params.teacherId, `2022-05-03`], async (error, result, fields) => {
+            if (result && result.length) {
+                const todayClasses = result.map(c => { return { name: c.name, start_date_time: String(c.start_date_time).split(' ')[4].slice(0,-3) } });
+                res.send(todayClasses);
             } else {
                 res.send({
                     message: 'Something went wrong',
