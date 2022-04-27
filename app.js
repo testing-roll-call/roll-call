@@ -26,14 +26,6 @@ app.get('/', (req, res) => {
     res.sendFile(`${__dirname}/index.html`);
 });
 
-//timeout would start on client after receiving the code
-//after 10 minutes it would send this request to the backend to delete code
-app.delete('/attendanceCode', (req, res) => {
-  const code = req.body.code;
-  delete classAttendanceCode[code];
-  res.send({code: code})
-})
-
 io.on('connection', (socket) => {
   
   function handleGenerateCode(classTeacherId) {
