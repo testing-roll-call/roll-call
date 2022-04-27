@@ -36,24 +36,33 @@ app.delete('/attendanceCode', (req, res) => {
 
 io.on('connection', (socket) => {
   
-  function handleGenerateCode() {
+  function handleGenerateCode(classTeacherId) {
     let code;
     // prevent duplicate codes
     do {
         code = Utilities.generateCode(10);
     } while (io.sockets.adapter.rooms.get(code))
-    socket.join(code);
+    socket.join(`${code}-${classTeacherId}`);
     socket.emit('codeGenerated', code);
   }
 
-  function handleDeleteCode(code) {
-    io.sockets.clients(code).forEach(function(client) {
-      client.leave(code);
+  function handleDeleteCode(code, classTeacherId) {
+    io.sockets.clients(`${code}-${classTeacherId}`).forEach(function(client) {
+      client.leave(`${code}-${classTeacherId}`);
     });
   }
 
-  function handleAttendLecture() {
-
+  function handleAttendLecture(code, userId) {
+    //select from database all unique class_teacher_ids for today - limit time somehow - 10 minutes+-
+    //look whether room with code and id exists - if yes then join else send error
+    const classIds = [];
+    const classId = classIds.find(id => io.sockets.adapter.rooms.get(`${code}-${id}`));
+    if (classId) {
+      socket.join(`${code}-${classId}`);
+      socket.emit('joinSuccessful');
+    } else {
+      socket.emit('joinFailed');
+    }
   }
 
   socket.on('generateCode', handleGenerateCode);
