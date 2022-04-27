@@ -18,22 +18,13 @@ app.use(express.json());
 // allow to pass form data
 app.use(express.urlencoded({ extended: true }));
 
+// create server and set up the sockets on the server
+const server = require('http').createServer(app);
+const io = require('socket.io')(server);
+
 app.get('/', (req, res) => {
     res.sendFile(`${__dirname}/index.html`);
 });
-
-const classAttendanceCode = {};
-
-app.get('/attendanceCode', (req, res) => {
-  const classTeacherId = req.body.classTeacherId;
-  let code;
-  // prevent duplicate codes
-  do {
-      code = Utilities.generateCode(10);
-  } while (classAttendanceCode[code])
-  classAttendanceCode[code] = classTeacherId;
-  res.send({code: code})
-})
 
 //timeout would start on client after receiving the code
 //after 10 minutes it would send this request to the backend to delete code
@@ -43,9 +34,30 @@ app.delete('/attendanceCode', (req, res) => {
   res.send({code: code})
 })
 
+io.on('connection', (socket) => {
+  
+  function handleGenerateCode() {
+    let code;
+    // prevent duplicate codes
+    do {
+        code = Utilities.generateCode(10);
+    } while (io.sockets.adapter.rooms.get(code))
+    socket.join(code);
+    socket.emit('codeGenerated', code);
+  }
+
+  function handleAttendLecture() {
+
+  }
+
+  socket.on('generateCode', handleGenerateCode);
+  socket.on('deleteCode', handleDeleteCode);
+  socket.on('attendLecture', handleAttendLecture);
+});
+
 const PORT = process.env.PORT || 8080;
 /* eslint-disable no-debugger, no-console */
-app.listen(PORT, (error) => {
+server.listen(PORT, (error) => {
     if (error) {
       console.log(error);
     }
