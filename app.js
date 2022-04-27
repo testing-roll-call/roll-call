@@ -46,6 +46,12 @@ io.on('connection', (socket) => {
     socket.emit('codeGenerated', code);
   }
 
+  function handleDeleteCode(code) {
+    io.sockets.clients(code).forEach(function(client) {
+      client.leave(code);
+    });
+  }
+
   function handleAttendLecture() {
 
   }
