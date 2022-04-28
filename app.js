@@ -65,6 +65,7 @@ io.on('connection', (socket) => {
       const classIds = result.classes;
       const classId = classIds.find(id => io.sockets.adapter.rooms.get(`${data.code}-${id.class_teacher_id}`));
       if (classId) {
+        //student part of the room - join room and update attendance
         socket.join(`${data.code}-${classId}`);
         let url = `http://localhost:8080/api/attendance/${classId.attendance_id}`;
         response = await fetch(url, {

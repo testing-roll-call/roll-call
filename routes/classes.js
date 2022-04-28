@@ -3,7 +3,7 @@ const { pool } = require('../database/connection');
 
 router.get('/api/classes/today/:userId', (req, res) => {
     pool.getConnection((err, db) => {
-        const now = new Date('2022-05-03 8:45:00');
+        const now = new Date();//'2022-05-03 8:45:00'
         const oldDate = new Date(now);
         //30 minutes ago
         oldDate.setMinutes(now.getMinutes() - 30);
