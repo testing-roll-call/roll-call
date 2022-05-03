@@ -251,7 +251,7 @@ function calculateStudentsAttendance(attendance) {
         if (userAttendance[key][0] === 0 || !userAttendance[key][0]) userAttendance[key][0] = 1; //avoid division by 0
         userAttendance[key] = {
             firstName: userAttendance[key][2],
-            lasttName: userAttendance[key][3],
+            lastName: userAttendance[key][3],
             attendance: Number.parseFloat(userAttendance[key][1]/userAttendance[key][0] * 100).toFixed(2)
         }
     });
