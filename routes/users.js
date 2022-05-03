@@ -179,6 +179,86 @@ router.get('/api/users/statisticCourse/:teacherId', (req, res) => {
     });
 });
 
+router.get('/api/users/teachers/attendance/:userId', (req, res) => {
+    pool.getConnection((err, db) => {
+        let query = `SELECT users.first_name, users.last_name, users.email, teachers_classes.start_date_time, attendance.is_attending
+                    FROM users 
+                    JOIN attendance ON users.user_id = attendance.user_id 
+                    JOIN teachers_classes ON attendance.class_teacher_id = teachers_classes.class_teacher_id 
+                    JOIN courses ON courses.course_id = teachers_classes.course_id 
+                    JOIN classes ON classes.class_id = teachers_classes.class_id 
+                    WHERE teachers_classes.teacher_id = ? AND 
+                        teachers_classes.class_id = ? AND
+                        teachers_classes.course_id = ?;`;
+        db.query(query, [req.params.userId, req.body.class_id, req.body.course_id], async (error, result, fields) => {
+            if (result && result.length) { 
+                const attendance = [];
+                for (const r of result) {
+                    //create new object
+                    attendance.push({ firstName: r.first_name, lastName: r.last_name, email: r.email, classStartDate: r.start_date_time, isAttending: r.is_attending});
+                }
+                date = new Date()
+                const classAttendance = calculateClassAttendanceBetweenDates(attendance, date, new Date(0));
+                let oldDate = new Date(date);
+                //get date one month ago
+                oldDate.setMonth(date.getMonth() - 1);
+                //set to midnight
+                oldDate.setHours(0, 0, 0, 0);
+                const monthlyAttendance = calculateClassAttendanceBetweenDates(attendance, date, oldDate);
+                oldDate = new Date(date);
+                //get date one month ago
+                oldDate.setDate(date.getDate() - 7);
+                //set to midnight
+                oldDate.setHours(0, 0, 0, 0);
+                const weeklyAttendance = calculateClassAttendanceBetweenDates(attendance, date, oldDate);
+                const studentsAttendance = calculateStudentsAttendance(attendance)
+                res.send({
+                    classAttendance, monthlyAttendance, weeklyAttendance, studentsAttendance
+                });
+            } else {
+                res.send({
+                    message: 'Something went wrong',
+                });
+            }
+        });
+        db.release();
+    });
+});
+//if it is split it will loop through whole result set multiple times, else these methods could be joined into 1, but then 1 method will do many things
+function calculateClassAttendanceBetweenDates(attendance, date, oldDate) {
+    let attending = 0;
+    let notAttending = 0;
+    attendance.map(user => {
+        if (user.classStartDate <= date && user.classStartDate >= oldDate) {
+            user.isAttending ? attending++ : notAttending++
+        }
+    });
+    const maxAttendance = attending + notAttending || 1; //avoid division by 0
+    return Number.parseFloat(attending/maxAttendance * 100).toFixed(2);
+}
+
+function calculateStudentsAttendance(attendance) {
+    const userAttendance = {}
+    attendance.map(user => {
+        if (userAttendance[user.email]) {
+            ++userAttendance[user.email][0];
+            user.isAttending ? ++userAttendance[user.email][1] : '';
+        } else {
+            userAttendance[user.email] = [1, user.isAttending ? 1 : 0, user.firstName, user.lastName];
+        }
+    });
+    Object.keys((userAttendance)).forEach(key => {
+        if (userAttendance[key][0] === 0 || !userAttendance[key][0]) userAttendance[key][0] = 1; //avoid division by 0
+        userAttendance[key] = {
+            firstName: userAttendance[key][2],
+            lastName: userAttendance[key][3],
+            attendance: Number.parseFloat(userAttendance[key][1]/userAttendance[key][0] * 100).toFixed(2)
+        }
+    });
+
+    return userAttendance;
+}
+
 module.exports = {
     router,
   };
