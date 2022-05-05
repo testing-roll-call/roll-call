@@ -165,7 +165,7 @@ router.get('/api/users/courses/:teacherId', (req, res) => {
 
 router.get('/api/users/statisticCourse/:teacherId', (req, res) => {
     pool.getConnection((err, db) => {
-        let query = 'SELECT DISTINCT courses.name AS courseName, classes.name AS className from courses join teachers_classes on courses.course_id = teachers_classes.course_id join classes on classes.class_id = teachers_classes.class_id where teachers_classes.teacher_id = ?;';
+        let query = 'SELECT DISTINCT courses.name AS courseName, classes.name AS className, courses.course_id from courses join teachers_classes on courses.course_id = teachers_classes.course_id join classes on classes.class_id = teachers_classes.class_id where teachers_classes.teacher_id = ?;';
         db.query(query, [req.params.teacherId], async (error, result, fields) => {
             if (result && result.length) {
                 res.send(result);
