@@ -148,10 +148,10 @@ router.get('/api/users/courses/:teacherId', (req, res) => {
         var dd = String(today.getDate()).padStart(2, '0');
         var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
         var yyyy = today.getFullYear();
-        let query = 'SELECT courses.name, teachers_classes.start_date_time from courses join teachers_classes on courses.course_id = teachers_classes.course_id where teachers_classes.teacher_id = ? AND DATE(teachers_classes.start_date_time) = ?;';
+        let query = 'SELECT teachers_classes.class_teacher_id courses.name, teachers_classes.start_date_time from courses join teachers_classes on courses.course_id = teachers_classes.course_id where teachers_classes.teacher_id = ? AND DATE(teachers_classes.start_date_time) = ?;';
         db.query(query, [req.params.teacherId, `${yyyy}-${mm}-${dd}`], async (error, result, fields) => {
             if (result && result.length) {
-                const todayClasses = result.map(c => { return { name: c.name, start_date_time: String(c.start_date_time).split(' ')[4].slice(0,-3) } });
+                const todayClasses = result.map(c => { return { class_teacher_id: c.class_teacher_id, name: c.name, start_date_time: String(c.start_date_time).split(' ')[4].slice(0,-3) } });
                 res.send(todayClasses);
             } else {
                 res.send({
