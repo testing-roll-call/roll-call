@@ -165,7 +165,7 @@ router.get('/api/users/courses/:teacherId', (req, res) => {
 
 router.get('/api/users/statisticCourse/:teacherId', (req, res) => {
     pool.getConnection((err, db) => {
-        let query = 'SELECT DISTINCT courses.name AS courseName, classes.name AS className from courses join teachers_classes on courses.course_id = teachers_classes.course_id join classes on classes.class_id = teachers_classes.class_id where teachers_classes.teacher_id = ?;';
+        let query = 'SELECT DISTINCT courses.name AS courseName, classes.name AS className, courses.course_id, classes.class_id from courses join teachers_classes on courses.course_id = teachers_classes.course_id join classes on classes.class_id = teachers_classes.class_id where teachers_classes.teacher_id = ?;';
         db.query(query, [req.params.teacherId], async (error, result, fields) => {
             if (result && result.length) {
                 res.send(result);
@@ -179,7 +179,7 @@ router.get('/api/users/statisticCourse/:teacherId', (req, res) => {
     });
 });
 
-router.get('/api/users/teachers/attendance/:userId', (req, res) => {
+router.post('/api/users/teachers/attendance/:userId', (req, res) => {
     pool.getConnection((err, db) => {
         let query = `SELECT users.first_name, users.last_name, users.email, teachers_classes.start_date_time, attendance.is_attending
                     FROM users 
@@ -190,7 +190,7 @@ router.get('/api/users/teachers/attendance/:userId', (req, res) => {
                     WHERE teachers_classes.teacher_id = ? AND 
                         teachers_classes.class_id = ? AND
                         teachers_classes.course_id = ?;`;
-        db.query(query, [req.params.userId, req.body.class_id, req.body.course_id], async (error, result, fields) => {
+        db.query(query, [req.params.userId, req.body.data.class_id, req.body.data.course_id], async (error, result, fields) => {
             if (result && result.length) { 
                 const attendance = [];
                 for (const r of result) {
