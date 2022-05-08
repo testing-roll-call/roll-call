@@ -43,7 +43,6 @@ router.post('/api/users/login', (req, res) => {
             if (result && result.length) {
                 bcrypt.compare(req.body.password, result[0].password, (error, match) => {
                     if (match) {
-                        console.log(result[0]);
                         if (result[0].user_id && result[0].email && result[0].user_role && result[0].first_name && result[0].last_name) {
                             req.session.userId = result[0].user_id;
                             req.session.email = result[0].email;
