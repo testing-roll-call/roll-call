@@ -1,10 +1,11 @@
 const router = require('express').Router();
 
 router.get('/getsession', (req, res) => {
-  if (req.session.userId && req.session.username) {
+  if (req.session.userId && req.session.username && req.body.role) {
     res.send({
       userId: req.session.userId,
       username: req.session.username,
+      role: req.session.role,
     });
   } else {
     res.send({
@@ -14,10 +15,11 @@ router.get('/getsession', (req, res) => {
 });
 
 router.post('/setsession', (req, res) => {
-  if (req.body.userId && req.body.username) {
+  if (req.body.userId && req.body.username && req.body.role) {
     req.session.userId = req.body.userId;
     req.session.username = req.body.username;
-    res.send({ userId: req.body.userId, username: req.body.username, message: 'Session is set' });
+    req.session.role = req.body.role;
+    res.send({ userId: req.body.userId, username: req.body.username, role: req.body.role, message: 'Session is set' });
   } else {
     res.send({ message: 'Session not set' });
   }
