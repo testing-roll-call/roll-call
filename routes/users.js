@@ -43,6 +43,17 @@ router.post('/api/users/login', (req, res) => {
             if (result && result.length) {
                 bcrypt.compare(req.body.password, result[0].password, (error, match) => {
                     if (match) {
+                        console.log(result[0]);
+                        if (result[0].user_id && result[0].email && result[0].user_role && result[0].first_name && result[0].last_name) {
+                            req.session.userId = result[0].user_id;
+                            req.session.email = result[0].email;
+                            req.session.role = result[0].user_role;
+                            req.session.firstName = result[0].first_name;
+                            req.session.lastName = result[0].last_name;
+                        } else {
+                            res.send({ message: 'Session not set' });
+                            return;
+                        }
                         res.send({
                             userId: result[0].user_id,
                             role: result[0].user_role,
