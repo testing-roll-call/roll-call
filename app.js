@@ -78,7 +78,7 @@ io.on('connection', (socket) => {
 
   async function handleAttendLecture(data) {
     //select from database all unique class_teacher_ids for today - limit time somehow - start within 30 minutes ago
-    let url = `http://localhost:8080/api/classes/today/${data.studentId}`;
+    let url = `http://localhost:8080/api/classes/today/${data.student.studentId}`;
     response = await fetch(url);
     result = await response.json();
     //look whether room with code and id exists - if yes then join else send error
@@ -86,8 +86,9 @@ io.on('connection', (socket) => {
       const classIds = result.classes;
       const classId = classIds.find(id => io.sockets.adapter.rooms.get(`${data.code}-${id.class_teacher_id}`));
       if (classId) {
+        //console.log(classId);
         //student part of the room - join room and update attendance
-        socket.join(`${data.code}-${classId}`);
+        socket.join(`${data.code}-${classId.class_teacher_id}`);
         let url = `http://localhost:8080/api/attendance/${classId.attendance_id}`;
         response = await fetch(url, {
           method: 'patch'
@@ -95,6 +96,9 @@ io.on('connection', (socket) => {
         result = await response.json();
         if (result.message === 'Attendance registered'){
           socket.emit('joinSuccessful');
+          //console.log(`${data.code}-${classId.class_teacher_id}`);
+          //console.log(data.student);
+          io.to(`${data.code}-${classId.class_teacher_id}`).emit('studentJoined', data.student);
         } else {
           socket.emit('joinFailed');
         }
