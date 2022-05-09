@@ -57,6 +57,8 @@ router.post('/api/users/login', (req, res) => {
                             userId: result[0].user_id,
                             role: result[0].user_role,
                             email: result[0].email,
+                            firstName: result[0].first_name,
+                            lastName: result[0].last_name
                         });
                     } else {
                         res.status(401).send({
@@ -90,7 +92,7 @@ router.get('/api/users/students/attendance/:userId', (req, res) => {
     pool.getConnection((err, db) => {
         let query = 'SELECT users.first_name, users.last_name, teachers_classes.start_date_time, teachers_classes.teacher_id, classes.name, attendance.is_attending, courses.name AS courseName from users join attendance on users.user_id = attendance.user_id join teachers_classes on attendance.class_teacher_id = teachers_classes.class_teacher_id join courses on courses.course_id = teachers_classes.course_id join classes on classes.class_id = teachers_classes.class_id where users.user_id = ?;';
         db.query(query, [req.params.userId], async (error, result, fields) => {
-            if (result && result.length) { 
+            if (result && result.length) {
                 const attendance = [];
                 for (const r of result) {
                     //create new object
@@ -201,7 +203,7 @@ router.post('/api/users/teachers/attendance/:userId', (req, res) => {
                         teachers_classes.class_id = ? AND
                         teachers_classes.course_id = ?;`;
         db.query(query, [req.params.userId, req.body.data.class_id, req.body.data.course_id], async (error, result, fields) => {
-            if (result && result.length) { 
+            if (result && result.length) {
                 const attendance = [];
                 for (const r of result) {
                     //create new object
