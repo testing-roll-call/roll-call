@@ -43,10 +43,22 @@ router.post('/api/users/login', (req, res) => {
             if (result && result.length) {
                 bcrypt.compare(req.body.password, result[0].password, (error, match) => {
                     if (match) {
+                        if (result[0].user_id && result[0].email && result[0].user_role && result[0].first_name && result[0].last_name) {
+                            req.session.userId = result[0].user_id;
+                            req.session.email = result[0].email;
+                            req.session.role = result[0].user_role;
+                            req.session.firstName = result[0].first_name;
+                            req.session.lastName = result[0].last_name;
+                        } else {
+                            res.send({ message: 'Session not set' });
+                            return;
+                        }
                         res.send({
                             userId: result[0].user_id,
                             role: result[0].user_role,
                             email: result[0].email,
+                            firstName: result[0].first_name,
+                            lastName: result[0].last_name
                         });
                     } else {
                         res.status(401).send({
@@ -80,7 +92,7 @@ router.get('/api/users/students/attendance/:userId', (req, res) => {
     pool.getConnection((err, db) => {
         let query = 'SELECT users.first_name, users.last_name, teachers_classes.start_date_time, teachers_classes.teacher_id, classes.name, attendance.is_attending, courses.name AS courseName from users join attendance on users.user_id = attendance.user_id join teachers_classes on attendance.class_teacher_id = teachers_classes.class_teacher_id join courses on courses.course_id = teachers_classes.course_id join classes on classes.class_id = teachers_classes.class_id where users.user_id = ?;';
         db.query(query, [req.params.userId], async (error, result, fields) => {
-            if (result && result.length) { 
+            if (result && result.length) {
                 const attendance = [];
                 for (const r of result) {
                     //create new object
@@ -148,10 +160,10 @@ router.get('/api/users/courses/:teacherId', (req, res) => {
         var dd = String(today.getDate()).padStart(2, '0');
         var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
         var yyyy = today.getFullYear();
-        let query = 'SELECT courses.name, teachers_classes.start_date_time from courses join teachers_classes on courses.course_id = teachers_classes.course_id where teachers_classes.teacher_id = ? AND DATE(teachers_classes.start_date_time) = ?;';
-        db.query(query, [req.params.teacherId, `2022-05-03`], async (error, result, fields) => {
+        let query = 'SELECT teachers_classes.class_teacher_id courses.name, teachers_classes.start_date_time from courses join teachers_classes on courses.course_id = teachers_classes.course_id where teachers_classes.teacher_id = ? AND DATE(teachers_classes.start_date_time) = ?;';
+        db.query(query, [req.params.teacherId, `${yyyy}-${mm}-${dd}`], async (error, result, fields) => {
             if (result && result.length) {
-                const todayClasses = result.map(c => { return { name: c.name, start_date_time: String(c.start_date_time).split(' ')[4].slice(0,-3) } });
+                const todayClasses = result.map(c => { return { class_teacher_id: c.class_teacher_id, name: c.name, start_date_time: String(c.start_date_time).split(' ')[4].slice(0,-3) } });
                 res.send(todayClasses);
             } else {
                 res.send({
@@ -165,9 +177,9 @@ router.get('/api/users/courses/:teacherId', (req, res) => {
 
 router.get('/api/users/statisticCourse/:teacherId', (req, res) => {
     pool.getConnection((err, db) => {
-        let query = 'SELECT DISTINCT courses.name AS courseName, classes.name AS className from courses join teachers_classes on courses.course_id = teachers_classes.course_id join classes on classes.class_id = teachers_classes.class_id where teachers_classes.teacher_id = ?;';
+        let query = 'SELECT DISTINCT courses.name AS courseName, classes.name AS className, courses.course_id, classes.class_id from courses join teachers_classes on courses.course_id = teachers_classes.course_id join classes on classes.class_id = teachers_classes.class_id where teachers_classes.teacher_id = ?;';
         db.query(query, [req.params.teacherId], async (error, result, fields) => {
-            if (result && result.length) {
+            if (result) {
                 res.send(result);
             } else {
                 res.send({
@@ -179,7 +191,7 @@ router.get('/api/users/statisticCourse/:teacherId', (req, res) => {
     });
 });
 
-router.get('/api/users/teachers/attendance/:userId', (req, res) => {
+router.post('/api/users/teachers/attendance/:userId', (req, res) => {
     pool.getConnection((err, db) => {
         let query = `SELECT users.first_name, users.last_name, users.email, teachers_classes.start_date_time, attendance.is_attending
                     FROM users 
@@ -190,8 +202,8 @@ router.get('/api/users/teachers/attendance/:userId', (req, res) => {
                     WHERE teachers_classes.teacher_id = ? AND 
                         teachers_classes.class_id = ? AND
                         teachers_classes.course_id = ?;`;
-        db.query(query, [req.params.userId, req.body.class_id, req.body.course_id], async (error, result, fields) => {
-            if (result && result.length) { 
+        db.query(query, [req.params.userId, req.body.data.class_id, req.body.data.course_id], async (error, result, fields) => {
+            if (result && result.length) {
                 const attendance = [];
                 for (const r of result) {
                     //create new object
