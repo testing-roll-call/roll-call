@@ -5,8 +5,8 @@ router.get('/api/classes/today/:userId', (req, res) => {
     pool.getConnection((err, db) => {
         const now = new Date();//'2022-05-03 8:45:00'
         const oldDate = new Date(now);
-        //30 minutes ago
-        oldDate.setMinutes(now.getMinutes() - 30);
+        //10 minutes ago
+        oldDate.setMinutes(now.getMinutes() - 10);
         let query = `SELECT teachers_classes.class_teacher_id, attendance.attendance_id
                         FROM teachers_classes
                         JOIN attendance ON attendance.class_teacher_id = teachers_classes.class_teacher_id 
