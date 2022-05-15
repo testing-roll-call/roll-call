@@ -59,55 +59,55 @@ app.get('/', (req, res) => {
 });
 
 io.on('connection', (socket) => {
+  function handleGenerateCode(lectureId) {
+      let code;
+      // prevent duplicate codes
+      do {
+          code = Utilities.generateCode(10);
+      } while (io.sockets.adapter.rooms.get(`${code}-${lectureId}`))
+      socket.join(`${code}-${lectureId}`);
+      socket.emit('codeGenerated', {code, lectureId});
+  }
   
-  function handleGenerateCode(classTeacherId) {
-    let code;
-    // prevent duplicate codes
-    do {
-        code = Utilities.generateCode(10);
-    } while (io.sockets.adapter.rooms.get(`${code}-${classTeacherId}`))
-    socket.join(`${code}-${classTeacherId}`);
-    socket.emit('codeGenerated', {code, classTeacherId});
-  }
-
   function handleDeleteCode(data) {
-    io.sockets.adapter.rooms.get(`${data.code}-${data.classTeacherId}`).forEach(function(client) {
-      io.sockets.sockets.get(client).leave(`${data.code}-${data.classTeacherId}`);
-    });
+      io.sockets.adapter.rooms.get(`${data.code}-${data.lectureId}`).forEach(function(client) {
+          io.sockets.sockets.get(client).leave(`${data.code}-${data.lectureId}`);
+      });
   }
-
+  
   async function handleAttendLecture(data) {
-    //select from database all unique class_teacher_ids for today - limit time somehow - start within 30 minutes ago
-    let url = `http://localhost:8080/api/classes/today/${data.student.studentId}`;
-    response = await fetch(url);
-    result = await response.json();
-    //look whether room with code and id exists - if yes then join else send error
-    if (!result.message) {
-      const classIds = result.classes;
-      const classId = classIds.find(id => io.sockets.adapter.rooms.get(`${data.code}-${id.class_teacher_id}`));
-      if (classId) {
-        //console.log(classId);
-        //student part of the room - join room and update attendance
-        socket.join(`${data.code}-${classId.class_teacher_id}`);
-        let url = `http://localhost:8080/api/attendance/${classId.attendance_id}`;
-        response = await fetch(url, {
-          method: 'patch'
-        });
-        result = await response.json();
-        if (result.message === 'Attendance registered'){
-          socket.emit('joinSuccessful');
-          //console.log(`${data.code}-${classId.class_teacher_id}`);
-          //console.log(data.student);
-          io.to(`${data.code}-${classId.class_teacher_id}`).emit('studentJoined', data.student);
-        } else {
-          socket.emit('joinFailed');
-        }
+      //select from database all unique lecture_ids for today - limit time somehow - start within 30 minutes ago
+      let url = `http://localhost:8080/api/lectures/today/${data.student.studentId}`;
+      response = await fetch(url);
+      result = await response.json();
+      //look whether room with code and id exists - if yes then join else send error
+      if (!result.message) {
+          const lectureIds = result.lectures;
+          const lectureId = lectureIds.find(id => io.sockets.adapter.rooms.get(`${data.code}-${id.lecture_id}`));
+          if (lectureId) {
+              await studentAttendsAndJoins(data, lectureId);
+          } else {
+              socket.emit('joinFailed');
+          }
       } else {
-        socket.emit('joinFailed');
+          socket.emit('joinFailed');
       }
-    } else {
-      socket.emit('joinFailed');
-    }
+  }
+  
+  async function studentAttendsAndJoins(data, lectureId) {
+      //student part of the room - join room and update attendance
+      socket.join(`${data.code}-${lectureId.lecture_id}`);
+      let url = `http://localhost:8080/api/attendance/${lectureId.attendance_id}`;
+      response = await fetch(url, {
+          method: 'patch'
+      });
+      result = await response.json();
+      if (result.message === 'Attendance registered'){
+          socket.emit('joinSuccessful');
+          io.to(`${data.code}-${lectureId.lecture_id}`).emit('studentJoined', data.student);
+      } else {
+          socket.emit('joinFailed');
+      }
   }
 
   socket.on('generateCode', handleGenerateCode);

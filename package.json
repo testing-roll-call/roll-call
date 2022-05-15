@@ -4,7 +4,7 @@
   "description": "Mandatory 2 for class development of large systems",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --verbose --coverage",
     "start": "node app.js"
   },
   "repository": {
@@ -23,8 +23,10 @@
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
     "express-session": "^1.17.2",
+    "jest": "^28.1.0",
     "mysql2": "^2.3.3",
     "node-fetch": "^2.6.6",
-    "socket.io": "^4.5.0"
+    "socket.io": "^4.5.0",
+    "socket.io-client": "^4.5.0"
   }
 }
