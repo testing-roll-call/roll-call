@@ -4,8 +4,9 @@
   "description": "Mandatory 2 for class development of large systems",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js"
+    "test": "jest",
+    "start": "node app.js",
+    "dev": "nodemon app.js"
   },
   "repository": {
     "type": "git",
@@ -26,5 +27,9 @@
     "mysql2": "^2.3.3",
     "node-fetch": "^2.6.6",
     "socket.io": "^4.5.0"
+  },
+  "devDependencies": {
+    "jest": "^28.1.0",
+    "nodemon": "^2.0.16"
   }
 }
