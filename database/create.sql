@@ -47,11 +47,11 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `heroku_f94932c1d70fb93`.`users` (
   `user_id` INT(11) NOT NULL AUTO_INCREMENT,
   `user_role` ENUM('TEACHER', 'STUDENT') NOT NULL,
-  `email` VARCHAR(45) NOT NULL,
+  `email` VARCHAR(127) NOT NULL,
   `password` VARCHAR(100) NOT NULL,
   `first_name` VARCHAR(45) NOT NULL,
   `last_name` VARCHAR(45) NOT NULL,
-  `class_id` INT NULL,
+  `class_id` INT(11) NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE INDEX `user_id_UNIQUE` (`user_id` ASC),
   UNIQUE INDEX `email_UNIQUE` (`email` ASC),
@@ -67,15 +67,15 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `heroku_f94932c1d70fb93`.`teachers_classes`
+-- Table `heroku_f94932c1d70fb93`.`lectures`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `heroku_f94932c1d70fb93`.`teachers_classes` (
-  `class_teacher_id` INT(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS `heroku_f94932c1d70fb93`.`lectures` (
+  `lecture_id` INT(11) NOT NULL AUTO_INCREMENT,
   `teacher_id` INT(11) NOT NULL,
   `start_date_time` DATETIME NOT NULL,
   `course_id` INT(11) NOT NULL,
-  `class_id` INT NOT NULL,
-  PRIMARY KEY (`class_teacher_id`),
+  `class_id` INT(11) NOT NULL,
+  PRIMARY KEY (`lecture_id`),
   INDEX `class_idx` (`course_id` ASC),
   INDEX `teacher_idx` (`teacher_id` ASC),
   INDEX `class_idx1` (`class_id` ASC),
@@ -101,14 +101,14 @@ DEFAULT CHARACTER SET = utf8;
 CREATE TABLE IF NOT EXISTS `heroku_f94932c1d70fb93`.`attendance` (
   `attendance_id` INT(11) NOT NULL AUTO_INCREMENT,
   `user_id` INT(11) NOT NULL,
-  `class_teacher_id` INT(11) NOT NULL,
+  `lecture_id` INT(11) NOT NULL,
   `is_attending` TINYINT(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`attendance_id`),
   INDEX `student_idx` (`user_id` ASC),
-  INDEX `teacher_idx` (`class_teacher_id` ASC),
-  CONSTRAINT `class_teacher`
-    FOREIGN KEY (`class_teacher_id`)
-    REFERENCES `heroku_f94932c1d70fb93`.`teachers_classes` (`class_teacher_id`),
+  INDEX `teacher_idx` (`lecture_id` ASC),
+  CONSTRAINT `lecture`
+    FOREIGN KEY (`lecture_id`)
+    REFERENCES `heroku_f94932c1d70fb93`.`lectures` (`lecture_id`),
   CONSTRAINT `student`
     FOREIGN KEY (`user_id`)
     REFERENCES `heroku_f94932c1d70fb93`.`users` (`user_id`))

@@ -9,6 +9,7 @@ class Utils {
     }
 
     //max not included
+    //return type number test, integer and not decimal
     generateRandomNumber(min, max) {
         return Math.floor(Math.random() * (max - min)) + min;
     }
