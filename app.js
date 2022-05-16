@@ -9,10 +9,6 @@ app.use(cors({origin: "*"})); // https://www.youtube.com/watch?v=PNtFSVU-YTI
 const { Utils } = require('./models/Utils');
 const Utilities = new Utils();
 
-
-// database setup
-const db = require('./database/connection').connection;
-
 //routers
 const classRoutes = require("./routes/classes.js");
 
@@ -115,11 +111,4 @@ io.on('connection', (socket) => {
   socket.on('attendLecture', handleAttendLecture);
 });
 
-const PORT = process.env.PORT || 8080;
-/* eslint-disable no-debugger, no-console */
-server.listen(PORT, (error) => {
-    if (error) {
-      console.log(error);
-    }
-    console.log('Server is running on port', Number(PORT));
-});
+module.exports = server;
