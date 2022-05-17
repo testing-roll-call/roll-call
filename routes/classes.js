@@ -1,10 +1,14 @@
 const router = require('express').Router();
 const { pool } = require('../database/connection');
 
+const requireAuth = require('../middlewares/requireAuth');
+
+router.use(requireAuth);
+
 //lectures for the student happening today
 router.get('/api/lectures/today/:studentId', (req, res) => {
     pool.getConnection((err, db) => {
-        const now = new Date();//'2022-05-03 8:45:00'
+        const now = new Date('2022-05-03 8:45:00');//'2022-05-03 8:45:00'
         const oldDate = new Date(now);
         //10 minutes ago
         oldDate.setMinutes(now.getMinutes() - 10);
@@ -14,7 +18,7 @@ router.get('/api/lectures/today/:studentId', (req, res) => {
                         WHERE attendance.user_id = ? AND 
                             lectures.start_date_time BETWEEN ? AND ?;`
         db.query(query, [req.params.studentId, oldDate, now], (error, result, fields) => {
-            if (result && result.length) { 
+            if (result && result.length) {
                 const lectures = [];
                 for (const r of result) {
                     lectures.push(r);
@@ -34,7 +38,7 @@ router.patch('/api/attendance/:attendanceId', (req, res) => {
     pool.getConnection((err, db) => {
         let query = `UPDATE attendance SET is_attending = 1 WHERE attendance_id = ?;`
         db.query(query, [req.params.attendanceId], (error, result, fields) => {
-            if (result && result.affectedRows === 1) { 
+            if (result && result.affectedRows === 1) {
                 res.send({
                     message: 'Attendance registered'
                 });

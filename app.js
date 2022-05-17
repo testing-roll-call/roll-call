@@ -3,33 +3,9 @@ const express = require('express');
 const app = express();
 
 const cors = require('cors')
-app.use(cors({origin: "*"})); // https://www.youtube.com/watch?v=PNtFSVU-YTI
+const cookieParser = require("cookie-parser");
 
-// Utils class
-const { Utils } = require('./models/Utils');
-const Utilities = new Utils();
-
-
-// database setup
-const db = require('./database/connection').connection;
-
-//routers
-const classRoutes = require("./routes/classes.js");
-
-app.use(classRoutes.router);
-
-// setup static dir
-// app.use(express.static(`${__dirname}`));
-
-// set up session
-const session = require('express-session');
-
-app.use(session({
-  secret: 'requiredSecret',
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false },
-}));
+app.use(cors({origin: "*"}));
 
 // allows to recognise incoming object as json object
 app.use(express.json());
@@ -37,12 +13,23 @@ app.use(express.json());
 // allow to pass form data
 app.use(express.urlencoded({ extended: true }));
 
-//routers
-const userRoutes = require("./routes/users.js");
-const handleSession = require('./routes/session.js');
+// allows to create a cookie parser middleware
+app.use(cookieParser());
 
-app.use(handleSession.router);
+// Utils class
+const { Utils } = require('./models/Utils');
+const Utilities = new Utils();
+
+// middlewares
+const requireAuth = require('./middlewares/requireAuth');
+
+//routers
+const classRoutes = require("./routes/classes.js");
+const userRoutes = require("./routes/users.js");
+
 app.use(userRoutes.router);
+app.use(classRoutes.router);
+
 const fetch = require('node-fetch');
 
 // create server and set up the sockets on the server
@@ -68,13 +55,13 @@ io.on('connection', (socket) => {
       socket.join(`${code}-${lectureId}`);
       socket.emit('codeGenerated', {code, lectureId});
   }
-  
+
   function handleDeleteCode(data) {
       io.sockets.adapter.rooms.get(`${data.code}-${data.lectureId}`).forEach(function(client) {
           io.sockets.sockets.get(client).leave(`${data.code}-${data.lectureId}`);
       });
   }
-  
+
   async function handleAttendLecture(data) {
       //select from database all unique lecture_ids for today - limit time somehow - start within 30 minutes ago
       let url = `http://localhost:8080/api/lectures/today/${data.student.studentId}`;
@@ -93,7 +80,7 @@ io.on('connection', (socket) => {
           socket.emit('joinFailed');
       }
   }
-  
+
   async function studentAttendsAndJoins(data, lectureId) {
       //student part of the room - join room and update attendance
       socket.join(`${data.code}-${lectureId.lecture_id}`);

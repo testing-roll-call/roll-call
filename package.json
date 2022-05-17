@@ -24,9 +24,15 @@
     "express": "^4.17.3",
     "express-session": "^1.17.2",
     "jest": "^28.1.0",
+    "jsonwebtoken": "^8.5.1",
     "mysql2": "^2.3.3",
     "node-fetch": "^2.6.6",
     "socket.io": "^4.5.0",
     "socket.io-client": "^4.5.0"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "none",
+    "printWidth": 90
   }
 }
