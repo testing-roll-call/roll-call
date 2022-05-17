@@ -30,7 +30,6 @@ const saveLectureToDB = (teacherId, dateTime) => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, db) => {
             let query = `INSERT INTO heroku_f94932c1d70fb93.lectures (teacher_id, start_date_time, course_id, class_id) VALUES (${teacherId},"${dateTime}", 1, 1);`;
-            console.log('query = ', query)
             db.query(query, (error, result, fields) => {
                 if (error) {
                     reject(error);
@@ -100,7 +99,6 @@ test("GET /api/users/classes/courses/all/:teacherId", async () => {
         .expect(200)
         .then((response) => {
             expect(Array.isArray(response.body)).toBeTruthy();
-            console.log('in second test... ', response.body);
             expect(response.body.course_id).toEqual(1);
             expect(response.body.class_id).toEqual(1);
             expect(response.body.courseName).toEqual('Development of Large Systems');
