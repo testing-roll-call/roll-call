@@ -1,11 +1,21 @@
-// setup express
+require('dotenv').config();
 const express = require('express');
 const app = express();
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const fetch = require('node-fetch');
+const requireAuth = require('./middlewares/requireAuth');
+const credentials = require('./middlewares/credentials');
 
-const cors = require('cors')
-const cookieParser = require("cookie-parser");
+const { Utils } = require('./models/Utils');
+const classRoutes = require('./routes/classes.js');
+const userRoutes = require('./routes/users.js');
+const authRoutes = require('./routes/auth.js');
 
-app.use(cors({origin: "*"}));
+// Cross Origin Resource Sharing
+app.use(credentials);
+
+app.use(cors({ origin: ['http://localhost:3000'], credentials: true }));
 
 // allows to recognise incoming object as json object
 app.use(express.json());
@@ -17,84 +27,77 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Utils class
-const { Utils } = require('./models/Utils');
 const Utilities = new Utils();
 
-// middlewares
-const requireAuth = require('./middlewares/requireAuth');
+// routers
+app.use(authRoutes.router);
 
-//routers
-const classRoutes = require("./routes/classes.js");
-const userRoutes = require("./routes/users.js");
-
+app.use(requireAuth);
 app.use(userRoutes.router);
 app.use(classRoutes.router);
-
-const fetch = require('node-fetch');
 
 // create server and set up the sockets on the server
 const server = require('http').createServer(app);
 const io = require('socket.io')(server, {
   cors: {
-    origin: "http://localhost:3000"
+    origin: 'http://localhost:3000'
   }
-});
-
-app.get('/', (req, res) => {
-  const object = {key: 'response from api'};
-    res.send(object);
 });
 
 io.on('connection', (socket) => {
   function handleGenerateCode(lectureId) {
-      let code;
-      // prevent duplicate codes
-      do {
-          code = Utilities.generateCode(10);
-      } while (io.sockets.adapter.rooms.get(`${code}-${lectureId}`))
-      socket.join(`${code}-${lectureId}`);
-      socket.emit('codeGenerated', {code, lectureId});
+    let code;
+    // prevent duplicate codes
+    do {
+      code = Utilities.generateCode(10);
+    } while (io.sockets.adapter.rooms.get(`${code}-${lectureId}`));
+    socket.join(`${code}-${lectureId}`);
+    socket.emit('codeGenerated', { code, lectureId });
   }
 
   function handleDeleteCode(data) {
-      io.sockets.adapter.rooms.get(`${data.code}-${data.lectureId}`).forEach(function(client) {
-          io.sockets.sockets.get(client).leave(`${data.code}-${data.lectureId}`);
+    io.sockets.adapter.rooms
+      .get(`${data.code}-${data.lectureId}`)
+      .forEach(function (client) {
+        io.sockets.sockets.get(client).leave(`${data.code}-${data.lectureId}`);
       });
   }
 
   async function handleAttendLecture(data) {
-      //select from database all unique lecture_ids for today - limit time somehow - start within 30 minutes ago
-      let url = `http://localhost:8080/api/lectures/today/${data.student.studentId}`;
-      response = await fetch(url);
-      result = await response.json();
-      //look whether room with code and id exists - if yes then join else send error
-      if (!result.message) {
-          const lectureIds = result.lectures;
-          const lectureId = lectureIds.find(id => io.sockets.adapter.rooms.get(`${data.code}-${id.lecture_id}`));
-          if (lectureId) {
-              await studentAttendsAndJoins(data, lectureId);
-          } else {
-              socket.emit('joinFailed');
-          }
+    //select from database all unique lecture_ids for today - limit time somehow - start within 30 minutes ago
+    let url = `http://localhost:8080/api/lectures/today/${data.student.studentId}`;
+    response = await fetch(url);
+    result = await response.json();
+    //look whether room with code and id exists - if yes then join else send error
+    if (!result.message) {
+      const lectureIds = result.lectures;
+      const lectureId = lectureIds.find((id) =>
+        io.sockets.adapter.rooms.get(`${data.code}-${id.lecture_id}`)
+      );
+      if (lectureId) {
+        await studentAttendsAndJoins(data, lectureId);
       } else {
-          socket.emit('joinFailed');
+        socket.emit('joinFailed');
       }
+    } else {
+      socket.emit('joinFailed');
+    }
   }
 
   async function studentAttendsAndJoins(data, lectureId) {
-      //student part of the room - join room and update attendance
-      socket.join(`${data.code}-${lectureId.lecture_id}`);
-      let url = `http://localhost:8080/api/attendance/${lectureId.attendance_id}`;
-      response = await fetch(url, {
-          method: 'patch'
-      });
-      result = await response.json();
-      if (result.message === 'Attendance registered'){
-          socket.emit('joinSuccessful');
-          io.to(`${data.code}-${lectureId.lecture_id}`).emit('studentJoined', data.student);
-      } else {
-          socket.emit('joinFailed');
-      }
+    //student part of the room - join room and update attendance
+    socket.join(`${data.code}-${lectureId.lecture_id}`);
+    let url = `http://localhost:8080/api/attendance/${lectureId.attendance_id}`;
+    response = await fetch(url, {
+      method: 'patch'
+    });
+    result = await response.json();
+    if (result.message === 'Attendance registered') {
+      socket.emit('joinSuccessful');
+      io.to(`${data.code}-${lectureId.lecture_id}`).emit('studentJoined', data.student);
+    } else {
+      socket.emit('joinFailed');
+    }
   }
 
   socket.on('generateCode', handleGenerateCode);
@@ -105,8 +108,8 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 8080;
 /* eslint-disable no-debugger, no-console */
 server.listen(PORT, (error) => {
-    if (error) {
-      console.log(error);
-    }
-    console.log('Server is running on port', Number(PORT));
+  if (error) {
+    console.log(error);
+  }
+  console.log('Server is running on port', Number(PORT));
 });

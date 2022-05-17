@@ -1,108 +1,5 @@
 const router = require('express').Router();
 const { pool } = require('../database/connection');
-const bcrypt = require('bcrypt');
-const { User } = require('../models/User');
-const requireAuth = require('../middlewares/requireAuth');
-const jwt = require('jsonwebtoken');
-
-const saltRounds = 15;
-
-router.post('/api/users/register', (req, res) => {
-  const { email, password, firstName, lastName, userRole, classId } = req.body;
-
-  try {
-    if (!userRole || (userRole !== 'TEACHER' && userRole !== 'STUDENT')) {
-      res.send({
-        message: 'Please choose the role: TEACHER or STUDENT.'
-      });
-      return;
-    }
-
-    bcrypt.hash(password, saltRounds, (error, hash) => {
-      if (!error) {
-        pool.getConnection((err, db) => {
-          let query =
-            'INSERT INTO users (user_role, email, password, first_name, last_name, class_id) VALUES (?, ?, ?, ?, ?, ?)';
-
-          db.query(
-            query,
-            [userRole, email, hash, firstName, lastName, classId],
-            (error, result, fields) => {
-              if (result && result.affectedRows === 1) {
-                const token = jwt.sign(
-                  {
-                    user_id: result.insertId,
-                    email,
-                    firstName,
-                    lastName,
-                    userRole,
-                    classId
-                  },
-                  process.env.JWT_SECRET
-                );
-
-                res.status(201).send({ token });
-              } else {
-                res.send({
-                  message: 'Something went wrong'
-                });
-              }
-            }
-          );
-
-          db.release();
-        });
-      } else {
-        res.status(500).send({
-          message: 'Something went wrong. Try again.'
-        });
-      }
-    });
-  } catch (e) {
-    return res.status(422).send(e.message);
-  }
-});
-
-router.post('/api/users/login', (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(422).send({ error: 'Must provide email and password' });
-  }
-
-  try {
-    pool.getConnection((err, db) => {
-      let query = 'SELECT * FROM users WHERE email = ?';
-      db.query(query, [email], (error, result, fields) => {
-        if (result && result.length) {
-          bcrypt.compare(password, result[0].password, (error, match) => {
-            if (match) {
-              const token = jwt.sign(
-                {
-                  userId: result[0].user_id,
-                  role: result[0].user_role,
-                  email,
-                  firstName: result[0].first_name,
-                  lastName: result[0].last_name
-                },
-                process.env.JWT_SECRET
-              );
-
-              res.status(200).send({ token });
-            } else {
-              return res.status(401).send({ error: 'Invalid password or email' });
-            }
-          });
-        } else {
-          return res.status(401).send({ error: 'Invalid password or email' });
-        }
-      });
-      db.release();
-    });
-  } catch (e) {
-    return res.status(401).send({ error: 'Invalid password or email' });
-  }
-});
 
 async function getTeacher(db, teacher_id) {
   const result = await new Promise((resolve, reject) =>
@@ -122,7 +19,7 @@ async function getTeacher(db, teacher_id) {
 }
 
 //get attendance for student by student id
-router.get('/api/users/students/attendance/:studentId', requireAuth, (req, res) => {
+router.get('/api/users/students/attendance/:studentId', (req, res) => {
   pool.getConnection((err, db) => {
     let query =
       'SELECT users.first_name, users.last_name, lectures.start_date_time, lectures.teacher_id, classes.name, attendance.is_attending, courses.name AS courseName from users join attendance on users.user_id = attendance.user_id join lectures on attendance.lecture_id = lectures.lecture_id join courses on courses.course_id = lectures.course_id join classes on classes.class_id = lectures.class_id where users.user_id = ?;';
@@ -185,7 +82,7 @@ function handleStudentStats(attendance) {
 }
 
 //show number of students in the class
-router.get('/api/users/students/:classId', requireAuth, (req, res) => {
+router.get('/api/users/students/:classId', (req, res) => {
   pool.getConnection((err, db) => {
     let query =
       'SELECT COUNT(users.email) AS studentCount from users join classes on users.class_id = classes.class_id where classes.class_id = ?;';
@@ -203,7 +100,7 @@ router.get('/api/users/students/:classId', requireAuth, (req, res) => {
 });
 
 //get todays lectures for teacher with course name and time
-router.get('/api/users/lectures/:teacherId', requireAuth, (req, res) => {
+router.get('/api/users/lectures/:teacherId', (req, res) => {
   pool.getConnection((err, db) => {
     var today = new Date();
     var dd = String(today.getDate()).padStart(2, '0');
@@ -237,7 +134,7 @@ router.get('/api/users/lectures/:teacherId', requireAuth, (req, res) => {
 });
 
 //get all classes and courses combinations for teacher statistics dropdown
-router.get('/api/users/classes/courses/all/:teacherId', requireAuth, (req, res) => {
+router.get('/api/users/classes/courses/all/:teacherId', (req, res) => {
   pool.getConnection((err, db) => {
     let query =
       'SELECT DISTINCT courses.name AS courseName, classes.name AS className, courses.course_id, classes.class_id from courses join lectures on courses.course_id = lectures.course_id join classes on classes.class_id = lectures.class_id where lectures.teacher_id = ?;';
@@ -255,7 +152,7 @@ router.get('/api/users/classes/courses/all/:teacherId', requireAuth, (req, res) 
 });
 
 //get attendance for teacher page by teacher id
-router.post('/api/users/teachers/attendance/:teacherId', requireAuth, (req, res) => {
+router.post('/api/users/teachers/attendance/:teacherId', (req, res) => {
   pool.getConnection((err, db) => {
     let query = `SELECT users.first_name, users.last_name, users.email, lectures.start_date_time, attendance.is_attending
                     FROM users 
