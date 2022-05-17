@@ -74,10 +74,7 @@ const deleteTeacherFromDB = (teacherId) => {
 }
 
 test("GET /api/users/lectures/:teacherId", async () => {
-    const today = new Date();
-    const date = today.getFullYear() + '-' + String((today.getMonth() + 1)).padStart(2, '0') + '-' + String((today.getDate())).padStart(2, '0');
-    const time = String(today.getHours() + 5).padStart(2, '0') + ':' + String(today.getMinutes()).padStart(2, '0') + ':' + String(today.getSeconds()).padStart(2, '0');
-    const dateTime = `${date} ${time}`;
+    const dateTime = getDateTime();
     const teacherId = await saveTeacherToDB();
     const lecture = await saveLectureToDB(teacherId, dateTime);
     await supertest(server).get(`/api/users/lectures/${teacherId}`)
@@ -95,14 +92,30 @@ test("GET /api/users/lectures/:teacherId", async () => {
     await deleteTeacherFromDB(teacherId);
 }, 20000);
 
-//
-// test("GET /api/users/classes/courses/all/:teacherId", async () => {
-//     await supertest(server).get("/api/users/classes/courses/all/1")
-//         .expect(200)
-//         .then((response) => {
-//             expect(Array.isArray(response.body)).toBeTruthy();
-//             for (let item of response.body) {
-//                 expect(item.courseName).toBeInstanceOf(String);
-//             }
-//         });
+test("GET /api/users/classes/courses/all/:teacherId", async () => {
+    const dateTime = getDateTime();
+    const teacherId = await saveTeacherToDB();
+    const lecture = await saveLectureToDB(teacherId, dateTime);
+    await supertest(server).get(`/api/users/classes/courses/all/${teacherId}`)
+        .expect(200)
+        .then((response) => {
+            expect(Array.isArray(response.body)).toBeTruthy();
+            console.log('in second test... ', response.body);
+            expect(response.body.course_id).toEqual(1);
+            expect(response.body.class_id).toEqual(1);
+            expect(response.body.courseName).toEqual('Development of Large Systems');
+        }).catch(async () => {
+            await deleteLectureFromDB(teacherId);
+            await deleteTeacherFromDB(teacherId);
+        });
+    await deleteLectureFromDB(teacherId);
+    await deleteTeacherFromDB(teacherId);
+}, 20000);
 
+// return a string representing a datetime on the same day
+const getDateTime = () => {
+    const today = new Date();
+    const date = today.getFullYear() + '-' + String((today.getMonth() + 1)).padStart(2, '0') + '-' + String((today.getDate())).padStart(2, '0');
+    const time = String(today.getHours() + 5).padStart(2, '0') + ':' + String(today.getMinutes()).padStart(2, '0') + ':' + String(today.getSeconds()).padStart(2, '0');
+    return `${date} ${time}`;
+}
