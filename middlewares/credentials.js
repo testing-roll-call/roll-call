@@ -3,7 +3,6 @@ const allowedOrigins = ['http://localhost:3000'];
 const credentials = (req, res, next) => {
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
-    console.log('YES');
     res.header('Access-Control-Allow-Credentials', true);
   }
   next();

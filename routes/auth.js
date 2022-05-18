@@ -8,7 +8,6 @@ const saltRounds = 15;
 router.get('/refresh', (req, res) => {
   const cookies = req.cookies;
 
-  console.log(req.cookies);
   if (!cookies?.session) return res.sendStatus(401);
   const refreshToken = cookies.session;
 
@@ -20,18 +19,20 @@ router.get('/refresh', (req, res) => {
           jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, payload) => {
             if (err || result[0].email !== payload.email) return res.sendStatus(403);
 
-            const accessToken = jwt.sign(
-              {
-                role: payload.user_role,
-                email: payload.email,
-                firstName: payload.first_name,
-                lastName: payload.last_name
-              },
-              process.env.JWT_SECRET,
-              { expiresIn: '30s' }
-            );
+            console.log(payload);
 
-            res.status(202).json({ accessToken });
+            const user = {
+              email: payload.email,
+              firstName: payload.firstName,
+              lastName: payload.lastName,
+              role: payload.role
+            };
+
+            const accessToken = jwt.sign(user, process.env.JWT_SECRET, {
+              expiresIn: '30s'
+            });
+
+            res.status(202).json({ claims: user, accessToken });
           });
         } else {
           return res.sendStatus(403);
@@ -187,7 +188,7 @@ router.get('/logout', (req, res) => {
       let query = 'SELECT * FROM users WHERE refresh_token = ?';
       db.query(query, [refreshToken], (error, result, fields) => {
         if (!result[0]) {
-          res.clearCookie('session', { httpOnly: true, sameSite: 'None' });
+          res.clearCookie('session', { httpOnly: true, sameSite: 'none', secure: true });
           return res.sendStatus(204);
         }
 
@@ -197,7 +198,8 @@ router.get('/logout', (req, res) => {
           if (result && result.affectedRows) {
             res.clearCookie('session', {
               httpOnly: true,
-              sameSite: 'None'
+              sameSite: 'none',
+              secure: true
             });
             res.sendStatus(200);
           }
