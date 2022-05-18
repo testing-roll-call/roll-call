@@ -1,0 +1,25 @@
+# must be unique in a given SonarQube instance
+sonar.projectKey=PROJECT KEY
+sonar.login=LOGIN
+sonar.password=PASSWORD
+# --- optional properties ---
+
+# defaults to project key
+sonar.projectName=PROJECT NAME
+# defaults to 'not provided'
+sonar.projectVersion=1.0
+
+# Path is relative to the sonar-project.properties file. Defaults to .
+sonar.sources=.
+sonar.tests=.
+#sonar.test.inclusions=./**/*.spec.js,./**/*.spec.jsx,./**/*.test.js,./**/*.test.jsx
+sonar.test.inclusions=**/*.test.js
+
+# Now specify path of lcov and testlog
+sonar.javascript.lcov.reportPaths=coverage/lcov.info
+#optional setup, jacoco report sensor can be used
+#sonar.coverage.jacoco.xmlReportPaths=coverage/test-reporter.xml
+sonar.testExecutionReportPaths=coverage/test-reporter.xml
+
+# Encoding of the source code. Default is default system encoding
+sonar.sourceEncoding=UTF-8 
