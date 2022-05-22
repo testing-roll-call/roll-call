@@ -2,10 +2,10 @@
   "name": "roll-call",
   "version": "1.0.0",
   "description": "Mandatory 2 for class development of large systems",
-  "main": "app.js",
+  "main": "index.js",
   "scripts": {
     "test": "jest --verbose --coverage",
-    "start": "node app.js",
+    "start": "node index.js",
     "sonar": "npx sonar-scanner"
   },
   "repository": {
@@ -43,5 +43,8 @@
     "reportPath": "coverage",
     "reportFile": "test-reporter.xml",
     "indent": 4
+  },
+  "devDependencies": {
+    "supertest": "^6.2.3"
   }
 }
