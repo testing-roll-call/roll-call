@@ -5,12 +5,18 @@ const { User } = require('../models/User');
 const saltRounds = 15;
 
 router.post('/api/users/register', (req, res) => {
+    if (req.body.password.length > 30) {
+        res.send({
+            message: 'The password can have maximum length of 30 characters',
+        });
+        return;
+    };
     if (!req.body.userRole || (req.body.userRole !== 'TEACHER' && req.body.userRole !== 'STUDENT')) {
         res.send({
             message: 'Please choose the role: TEACHER or STUDENT.',
         });
         return;
-    }
+    };
     bcrypt.hash(req.body.password, saltRounds, (error, hash) => {
         if (!error) {
             pool.getConnection((err, db) => {
