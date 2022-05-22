@@ -3,10 +3,7 @@ const supertest = require("supertest");
 
 const {pool} = require('../database/connection');
 
-describe('socket test', () => {
-    afterEach(async () => {
-        await deleteData();
-    });
+describe('teacherStatistics test', () => {
 
     beforeEach(async () => {
         await insertInitialData();
@@ -31,7 +28,8 @@ describe('socket test', () => {
                 expect(response.body.studentsAttendance['m-mckay5458@yahoo.net'].firstName).toEqual('Mira');
                 expect(response.body.studentsAttendance['m-mckay5458@yahoo.net'].lastName).toEqual('Mckay');
                 expect(response.body.studentsAttendance['m-mckay5458@yahoo.net'].attendance).toEqual("50.00");
-            })
+            });
+            await deleteData();
     }, 20000);
 
     const testsFail = [
@@ -89,7 +87,8 @@ describe('socket test', () => {
                 .then((response) => {
                     expect((response.body)).toBeTruthy();
                     expect(response.body.message).toEqual(expected);
-                })
+                });
+                await deleteData();
         }, 20000);
     });
 

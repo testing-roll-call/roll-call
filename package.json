@@ -4,7 +4,7 @@
   "description": "Mandatory 2 for class development of large systems",
   "main": "index.js",
   "scripts": {
-    "test": "jest --verbose --coverage",
+    "test": "jest --verbose --coverage --runInBand",
     "start": "node index.js",
     "sonar": "npx sonar-scanner"
   },

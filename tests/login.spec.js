@@ -1,70 +1,13 @@
 const server = require("../app");
 const supertest = require("supertest");
 
-const {pool, testPool} = require('../database/connection');
+const {pool} = require('../database/connection');
 
-describe('register test', () => {
+describe('login test', () => {
 
-    const userArrayPass = [
-        {args: {
-            firstName: "Dagmara",
-            lastName: "Przygocka",
-            user_role: "TEACHER",
-            email: "v-kane@yahoo.com",
-            password: "JmE95osSMM4bYF", 
-            class_id: null,
-        }, expected: "Something went wrong. Try again."},
-        {args: {
-            firstName: "Marianna",
-            lastName: "Smith",
-            user_role: "STUDENT",
-            email: " v-m@yahoo.com",
-            password: "JmE95osSMM4bYK", 
-            class_id: 1,
-        }, expected: "Something went wrong. Try again."}
-    ];
-    const userArrayFail = [
-        {args: {
-            firstName: "FailName",
-            lastName: "FailSurname",
-            user_role: "FAIL",
-            email: "ff@yahoo.com",
-            password: "KmE95osSMM4bYK", 
-            class_id: 1,
-        }, expected: "Please choose the role: TEACHER or STUDENT."},
-        {args: {
-            firstName: "FailName",
-            lastName: "FailSurname",
-            user_role: "STUDENT",
-            email: 5,
-            password: "KmE95osSMM4bYK", 
-            class_id: 1,
-        }, expected: "Something went wrong. Try again."},
-        {args: {
-            firstName: "FailName",
-            lastName: null,
-            user_role: "STUDENT",
-            email: "ff@yahoo.com",
-            password: "KmE95osSMM4bYK", 
-            class_id: 1,
-        }, expected: "Something went wrong. Try again."},
-        {args: {
-            firstName: null,
-            lastName: "FailSurname",
-            user_role: "STUDENT",
-            email: "ff@yahoo.com",
-            password: "KmE95osSMM4bYK", 
-            class_id: 1,
-        }, expected: "Something went wrong. Try again."},
-        {args: {
-            firstName: "Marianna",
-            lastName: "Smith",
-            user_role: "STUDENT",
-            email: " v-m@yahoo.com",
-            password: "JmE95osSMM4bYKKKKKKKKKKKKKKKKKKKKKKKKKKKKJJJJJJJJJJJJJJJJJJJJJJJJJJJJOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII", 
-            class_id: 1,
-        }, expected: "Something went wrong. Try again."}
-    ];
+    beforeEach(async () => {
+        await insertInitialData();
+    });
 
     const loginPass = [
         {args: {
@@ -86,34 +29,6 @@ describe('register test', () => {
         },
     ]
 
-    userArrayPass.forEach(({ args, expected }) => {
-        test("POST /api/users/register", async () => {
-            await supertest(server).post(`/api/users/register`)
-                .send({args})
-                .expect(200)
-                .then((response) => {
-                    expect(response.body).toBeTruthy();
-                    expect(response.body.message).toEqual(expected);
-                }).catch(async () => {
-                    console.log('error');
-                })
-        }, 20000);
-    });
-
-    userArrayFail.forEach(({ args, expected }) => {
-        test("POST /api/users/register", async () => {
-            await supertest(server).post(`/api/users/register`)
-                .send({args})
-                .expect(200)
-                .then((response) => {
-                    expect(response.body).toBeTruthy();
-                    expect(response.body.message).toEqual(expected);
-                }).catch(async () => {
-                    console.log('error');
-                });
-        }, 20000);
-    });
-
     loginPass.forEach(({ args }) => {
         test("POST /api/users/login", async () => {
             await supertest(server).post(`/api/users/login`)
@@ -129,7 +44,8 @@ describe('register test', () => {
                     expect(response.body.firstName).toEqual("Przygocka");
                 }).catch(async () => {
                     console.log('error');
-                })
+                });
+                await deleteUserFromDB();
         }, 20000);
     });
 
@@ -143,23 +59,20 @@ describe('register test', () => {
                     expect(response.body.message).toEqual(expected);
                 }).catch(async () => {
                     console.log('error');
-                }).finally(async () => {
-                    await deleteUserFromDB();
-                });
+                })
+                await deleteUserFromDB();
         }, 20000);
     });
 
     afterAll(async () => {
-        await deleteUserFromDB();
-        testPool.end();
         pool.end();
-      });
+    });
 
 });
 
 function deleteUserFromDB () {
     return new Promise((resolve, reject) => {
-        testPool.getConnection((err, db) => {
+        pool.getConnection((err, db) => {
             let query =
                 'DELETE FROM users where user_id >0;';
             db.query(query, (error, result, fields) => {
@@ -167,6 +80,22 @@ function deleteUserFromDB () {
                     reject(error);
                 }
                 resolve("Data deleted");
+            });
+            db.release();
+        });
+    })
+}
+
+function insertInitialData (){
+    return new Promise((resolve, reject) => {
+        pool.getConnection((err, db) => {
+            let query = `INSERT INTO users (user_id, first_name, last_name, email, user_role, password, class_id) VALUES (1, "Kane", "Vasquez", "v-kane@yahoo.com", "TEACHER", "$2b$15$PGfdEXxNY2M.OSsh1mjIFuy9Tg32Z3Cc5QkKPGIW5f.DNVXpGYwOa", NULL);`;
+            db.query(query, (error, result, fields) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
             });
             db.release();
         });
