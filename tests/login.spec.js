@@ -5,10 +5,6 @@ const {pool} = require('../database/connection');
 
 describe('login test', () => {
 
-    beforeEach(async () => {
-        await insertInitialData();
-    });
-
     const loginPass = [
         {args: {
             email: "v-kane@yahoo.com",
@@ -31,6 +27,7 @@ describe('login test', () => {
 
     loginPass.forEach(({ args }) => {
         test("POST /api/users/login", async () => {
+            await insertInitialData();
             await supertest(server).post(`/api/users/login`)
                 .send({args})
                 .expect(200)
@@ -51,6 +48,7 @@ describe('login test', () => {
 
     loginFail.forEach(({ args, expected }) => {
         test("POST /api/users/login", async () => {
+            await insertInitialData();
             await supertest(server).post(`/api/users/login`)
                 .send({args})
                 .expect(200)
@@ -65,7 +63,7 @@ describe('login test', () => {
     });
 
     afterAll(async () => {
-        pool.end();
+        //pool.end();
     });
 
 });

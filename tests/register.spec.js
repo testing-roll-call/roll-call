@@ -77,6 +77,7 @@ describe('register test', () => {
                 }).catch(async () => {
                     console.log('error');
                 })
+                await deleteUserFromDB();
         }, 20000);
     });
 
@@ -91,12 +92,8 @@ describe('register test', () => {
                 }).catch(async () => {
                     console.log('error');
                 })
+                await deleteUserFromDB();
         }, 20000);
-    });
-
-    afterAll(async () => {
-        await deleteUserFromDB();
-        pool.end();
     });
 
 });

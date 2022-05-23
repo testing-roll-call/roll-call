@@ -5,11 +5,8 @@ const {pool} = require('../database/connection');
 
 describe('teacherStatistics test', () => {
 
-    beforeEach(async () => {
-        await insertInitialData();
-    })
-
     test("POST /api/users/teachers/attendance/:teacherId correct", async () => {
+        await insertInitialData();
         const class_id = 1;
         const course_id = 1;
         const teacherId = 1;
@@ -81,6 +78,7 @@ describe('teacherStatistics test', () => {
     ];
     testsFail.forEach(({ args, expected }) => {
         test(`POST /api/users/teachers/attendance/:teacherId fail with args ${args} expect ${expected}`, async () => {
+            await insertInitialData();
             await supertest(server).post(`/api/users/teachers/attendance/${args.teacherId}`)
                 .send({data: {class_id: args.class_id, course_id: args.course_id}})  
                 .expect(200)
@@ -92,7 +90,8 @@ describe('teacherStatistics test', () => {
         }, 20000);
     });
 
-    afterAll(() => { pool.end(); });
+    afterAll(() => { //pool.end(); 
+    });
 });
 
 function insertInitialData (){
