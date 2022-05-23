@@ -31,10 +31,10 @@ const Utilities = new Utils();
 
 // routers
 app.use(authRoutes.router);
+app.use(classRoutes.router);
 
 app.use(requireAuth);
 app.use(userRoutes.router);
-app.use(classRoutes.router);
 
 // create server and set up the sockets on the server
 const server = require('http').createServer(app);

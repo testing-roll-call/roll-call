@@ -4,7 +4,7 @@ const { pool } = require('../database/connection');
 //lectures for the student happening today
 router.get('/api/lectures/today/:studentId', (req, res) => {
   pool.getConnection((err, db) => {
-    const now = new Date('2022-05-03 8:45:00'); //'2022-05-03 8:45:00'
+    const now = new Date('2022-05-03 8:39:00'); //'2022-05-03 8:45:00'
     const oldDate = new Date(now);
     //10 minutes ago
     oldDate.setMinutes(now.getMinutes() - 10);

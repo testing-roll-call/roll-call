@@ -19,9 +19,10 @@ router.get('/refresh', (req, res) => {
           jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, payload) => {
             if (err || result[0].email !== payload.email) return res.sendStatus(403);
 
-            console.log(payload);
+            console.log("payload", payload);
 
             const user = {
+              id: payload.id,
               email: payload.email,
               firstName: payload.firstName,
               lastName: payload.lastName,
@@ -132,6 +133,7 @@ router.post('/api/users/login', (req, res) => {
           bcrypt.compare(password, result[0].password, (error, match) => {
             if (match) {
               const user = {
+                id: result[0].user_id,
                 email: result[0].email,
                 firstName: result[0].first_name,
                 lastName: result[0].last_name,

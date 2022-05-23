@@ -99,10 +99,10 @@ router.get('/api/users/students/:classId', (req, res) => {
   });
 });
 
-//get todays lectures for teacher with course name and time
+//get today's lectures for teacher with course name and time
 router.get('/api/users/lectures/:teacherId', (req, res) => {
   pool.getConnection((err, db) => {
-    var today = new Date();
+    var today = new Date('2022-05-03');
     var dd = String(today.getDate()).padStart(2, '0');
     var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
     var yyyy = today.getFullYear();
@@ -112,16 +112,9 @@ router.get('/api/users/lectures/:teacherId', (req, res) => {
       query,
       [req.params.teacherId, `${yyyy}-${mm}-${dd}`],
       async (error, result, fields) => {
-        console.log(result);
         if (result && result.length) {
-          const todayClasses = result.map((c) => {
-            return {
-              lecture_id: c.lecture_id,
-              name: c.name,
-              start_date_time: c.start_date_time
-            };
-          });
-          res.send(todayClasses);
+          console.log("teach", req.params.teacherId);
+          res.send(result);
         } else {
           res.send({
             message: 'Something went wrong'
