@@ -2,7 +2,6 @@ const server = require("../app");
 const supertest = require("supertest");
 
 const {pool} = require('../database/connection');
-
 describe('login test', () => {
 
     const loginPass = [
@@ -62,8 +61,8 @@ describe('login test', () => {
         }, 20000);
     });
 
-    afterAll(async () => {
-        //pool.end();
+    afterAll(()=> {
+        pool.end();
     });
 
 });

@@ -2,7 +2,6 @@ const server = require("../app");
 const supertest = require("supertest");
 
 const {pool} = require('../database/connection');
-
 describe('register test', () => {
 
     const userArrayPass = [
@@ -94,6 +93,10 @@ describe('register test', () => {
                 })
                 await deleteUserFromDB();
         }, 20000);
+    });
+
+    afterAll(()=> {
+        pool.end();
     });
 
 });

@@ -2,7 +2,6 @@ const server = require("../app");
 const supertest = require("supertest");
 
 const {pool} = require('../database/connection');
-
 describe('teacherStatistics test', () => {
 
     test("POST /api/users/teachers/attendance/:teacherId correct", async () => {
@@ -90,7 +89,8 @@ describe('teacherStatistics test', () => {
         }, 20000);
     });
 
-    afterAll(() => { //pool.end(); 
+    afterAll(()=> {
+        pool.end();
     });
 });
 
