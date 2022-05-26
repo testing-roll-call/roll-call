@@ -14,8 +14,6 @@ class Utils {
         }
         return code;
     }
-    return code;
-  }
 
     //max not included
     //return type number test, integer and not decimal
