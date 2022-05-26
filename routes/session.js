@@ -1,17 +1,23 @@
 const router = require('express').Router();
 
 router.get('/getsession', (req, res) => {
-  if (req.session.userId && req.session.lastName && req.session.firstName && req.session.role && req.session.email) {
+  if (
+    req.session.userId &&
+    req.session.lastName &&
+    req.session.firstName &&
+    req.session.role &&
+    req.session.email
+  ) {
     res.send({
       userId: req.session.userId,
       firstName: req.session.firstName,
       lastName: req.session.lastName,
       role: req.session.role,
-      email: req.session.email,
+      email: req.session.email
     });
   } else {
     res.send({
-      message: 'User not logged in.',
+      message: 'User not logged in.'
     });
   }
 });
@@ -35,12 +41,12 @@ router.delete('/destroysession', (req, res) => {
     if (error) {
       res.send({
         message: 'Something went wrong',
-        isDestroyed: 0,
+        isDestroyed: 0
       });
     } else {
       res.send({
         message: 'Session destroyed',
-        isDestroyed: 1,
+        isDestroyed: 1
       });
     }
   });

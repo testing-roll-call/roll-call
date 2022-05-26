@@ -1,44 +1,22 @@
-// setup express
+require('dotenv').config();
 const express = require('express');
 
 const app = express();
-
 const cors = require('cors');
-
-app.use(cors({ origin: '*' })); // https://www.youtube.com/watch?v=PNtFSVU-YTI
-
-// Utils class
+const cookieParser = require('cookie-parser');
 const fetch = require('node-fetch');
-const session = require('express-session');
-const server = require('http').createServer(app);
-const io = require('socket.io')(server, {
-  cors: {
-    origin: 'http://localhost:3000',
-  },
-});
+const requireAuth = require('./middlewares/requireAuth');
+const credentials = require('./middlewares/credentials');
+
 const { Utils } = require('./models/Utils');
-
-const Utilities = new Utils();
-
-// database setup
-const db = require('./database/connection').connection;
-
-// routers
 const classRoutes = require('./routes/classes.js');
+const userRoutes = require('./routes/users.js');
+const authRoutes = require('./routes/auth.js');
 
-app.use(classRoutes.router);
+// Cross Origin Resource Sharing
+app.use(credentials);
 
-// setup static dir
-// app.use(express.static(`${__dirname}`));
-
-// set up session
-
-app.use(session({
-  secret: 'requiredSecret',
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false },
-}));
+app.use(cors({ origin: ['http://localhost:3000'], credentials: true }));
 
 // allows to recognise incoming object as json object
 app.use(express.json());
@@ -46,18 +24,25 @@ app.use(express.json());
 // allow to pass form data
 app.use(express.urlencoded({ extended: true }));
 
-// routers
-const userRoutes = require('./routes/users.js');
-const handleSession = require('./routes/session.js');
+// allows to create a cookie parser middleware
+app.use(cookieParser());
 
-app.use(handleSession.router);
+// Utils class
+const Utilities = new Utils();
+
+// routers
+app.use(authRoutes.router);
+app.use(classRoutes.router);
+
+app.use(requireAuth);
 app.use(userRoutes.router);
 
 // create server and set up the sockets on the server
-
-app.get('/', (req, res) => {
-  const object = { key: 'response from api' };
-  res.send(object);
+const server = require('http').createServer(app);
+const io = require('socket.io')(server, {
+  cors: {
+    origin: 'http://localhost:3000'
+  }
 });
 
 io.on('connection', (socket) => {
@@ -72,20 +57,24 @@ io.on('connection', (socket) => {
   }
 
   function handleDeleteCode(data) {
-    io.sockets.adapter.rooms.get(`${data.code}-${data.lectureId}`).forEach((client) => {
-      io.sockets.sockets.get(client).leave(`${data.code}-${data.lectureId}`);
-    });
+    io.sockets.adapter.rooms
+      .get(`${data.code}-${data.lectureId}`)
+      .forEach(function (client) {
+        io.sockets.sockets.get(client).leave(`${data.code}-${data.lectureId}`);
+      });
   }
 
   async function handleAttendLecture(data) {
-    // select from database all unique lecture_ids for today - limit time somehow - start within 30 minutes ago
-    const url = `http://localhost:8080/api/lectures/today/${data.student.studentId}`;
+    //select from database all unique lecture_ids for today - limit time somehow - start within 30 minutes ago
+    let url = `http://localhost:8080/api/lectures/today/${data.student.studentId}`;
     response = await fetch(url);
     result = await response.json();
-    // look whether room with code and id exists - if yes then join else send error
+    //look whether room with code and id exists - if yes then join else send error
     if (!result.message) {
       const lectureIds = result.lectures;
-      const lectureId = lectureIds.find((id) => io.sockets.adapter.rooms.get(`${data.code}-${id.lecture_id}`));
+      const lectureId = lectureIds.find((id) =>
+        io.sockets.adapter.rooms.get(`${data.code}-${id.lecture_id}`)
+      );
       if (lectureId) {
         await studentAttendsAndJoins(data, lectureId);
       } else {
@@ -97,11 +86,11 @@ io.on('connection', (socket) => {
   }
 
   async function studentAttendsAndJoins(data, lectureId) {
-    // student part of the room - join room and update attendance
+    //student part of the room - join room and update attendance
     socket.join(`${data.code}-${lectureId.lecture_id}`);
-    const url = `http://localhost:8080/api/attendance/${lectureId.attendance_id}`;
+    let url = `http://localhost:8080/api/attendance/${lectureId.attendance_id}`;
     response = await fetch(url, {
-      method: 'patch',
+      method: 'patch'
     });
     result = await response.json();
     if (result.message === 'Attendance registered') {

@@ -4,11 +4,11 @@ const { pool } = require('../database/connection');
 // lectures for the student happening today
 router.get('/api/lectures/today/:studentId', (req, res) => {
   pool.getConnection((err, db) => {
-    const now = new Date();// '2022-05-03 8:45:00'
+    const now = new Date('2022-05-03 8:39:00'); //'2022-05-03 8:45:00'
     const oldDate = new Date(now);
-    // 10 minutes ago
+    //10 minutes ago
     oldDate.setMinutes(now.getMinutes() - 10);
-    const query = `SELECT lectures.lecture_id, attendance.attendance_id
+    let query = `SELECT lectures.lecture_id, attendance.attendance_id
                         FROM lectures
                         JOIN attendance ON attendance.lecture_id = lectures.lecture_id 
                         WHERE attendance.user_id = ? AND 
@@ -19,10 +19,10 @@ router.get('/api/lectures/today/:studentId', (req, res) => {
         for (const r of result) {
           lectures.push(r);
         }
-        res.send({ lectures });
+        res.send({ lectures: lectures });
       } else {
         res.send({
-          message: 'Something went wrong',
+          message: 'Something went wrong'
         });
       }
     });
@@ -32,15 +32,15 @@ router.get('/api/lectures/today/:studentId', (req, res) => {
 
 router.patch('/api/attendance/:attendanceId', (req, res) => {
   pool.getConnection((err, db) => {
-    const query = 'UPDATE attendance SET is_attending = 1 WHERE attendance_id = ?;';
+    let query = `UPDATE attendance SET is_attending = 1 WHERE attendance_id = ?;`;
     db.query(query, [req.params.attendanceId], (error, result, fields) => {
       if (result && result.affectedRows === 1) {
         res.send({
-          message: 'Attendance registered',
+          message: 'Attendance registered'
         });
       } else {
         res.send({
-          message: 'Something went wrong',
+          message: 'Something went wrong'
         });
       }
     });
