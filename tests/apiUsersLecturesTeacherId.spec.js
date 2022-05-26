@@ -1,6 +1,6 @@
 const server = require("../app");
 const supertest = require("supertest");
-const {getDateTime} = require("./helperMethods");
+const {formatDate} = require("./helperMethods");
 const {pool} = require("../database/connection");
 const {
     saveTeacherToDB,
@@ -26,23 +26,24 @@ describe('GET /api/users/lectures/:teacherId', () => {
         pool.end();
     });
 
-    // test("should get correct statistics", async () => {
-    //     const dateTime = getDateTime();
-    //     await saveCoursesToDB();
-    //     await saveClassesToDB();
-    //     const teacherId = await saveTeacherToDB();
-    //     const lecture = await saveLectureToDB(teacherId, dateTime);
-    //     await supertest(server).get(`/api/users/lectures/${teacherId}`)
-    //         .expect(200)
-    //         .then((response) => {
-    //             expect(Array.isArray(response.body)).toBeTruthy();
-    //             expect(response.body.lecture_id).toEqual(lecture.lecture_id);
-    //             expect(response.body.start_date_time).toEqual(dateTime);
-    //             expect(response.body.name).toEqual('Development of Large Systems');
-    //         }).catch(async (error) => {
-    //             console.log(error)
-    //         });
-    // }, 20000);
+    test("should get a single lecture for a given teacher", async () => {
+        const dateTime = formatDate(new Date());
+        await saveCourseToDB(1, 'Development of Large Systems');
+        const teacherId = await saveTeacherToDB();
+        await saveClassToDB(1, 'SD22w');
+        const lecture = await saveLectureToDB(teacherId, dateTime, 1, 1);
+        await supertest(server).get(`/api/users/lectures/${teacherId}`)
+            .expect(200)
+            .then((response) => {
+                expect(Array.isArray(response.body)).toBeTruthy();
+                expect(response.body[0].lecture_id).toEqual(lecture.lecture_id);
+                const localDate = new Date(response.body[0].start_date_time);
+                expect(formatDate(localDate)).toEqual(dateTime);
+                expect(response.body[0].name).toEqual('Development of Large Systems');
+            }).catch(async (error) => {
+                console.log(error)
+            });
+    }, 20000);
 });
 
 // multiple lectures for the same class - course combination

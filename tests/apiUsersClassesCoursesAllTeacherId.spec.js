@@ -1,6 +1,6 @@
 const server = require("../app");
 const supertest = require("supertest");
-const {getDateTime} = require("./helperMethods");
+const {formatDate} = require("./helperMethods");
 const {pool} = require("../database/connection");
 const {
     saveTeacherToDB,
@@ -27,7 +27,7 @@ describe('GET /api/users/classes/courses/all/:teacherId', () => {
     });
 
     test("should get a single course for a given teacher", async () => {
-        const dateTime = getDateTime();
+        const dateTime = formatDate(new Date());
         await saveCourseToDB(1, 'Development of Large Systems');
         const teacherId = await saveTeacherToDB();
         await saveClassToDB(1, 'SD22w');
@@ -45,7 +45,7 @@ describe('GET /api/users/classes/courses/all/:teacherId', () => {
     }, 20000);
 
     test("should get multiple courses for a given teacher", async () => {
-        const dateTime = getDateTime();
+        const dateTime = formatDate(new Date());
         await saveCourseToDB(1, 'Development of Large Systems');
         await saveCourseToDB(2, 'Testing');
         const teacherId = await saveTeacherToDB();
@@ -68,8 +68,24 @@ describe('GET /api/users/classes/courses/all/:teacherId', () => {
                 console.log(error)
             });
     }, 20000);
-});
 
-// multiple lectures for the same class - course combination
-// test teacher id if it's string or null,
-// if array is empty
+    test("should return an empty array if the teacher id is string", async () => {
+        await supertest(server).get(`/api/users/classes/courses/all/randomString`)
+            .expect(200)
+            .then((response) => {
+                expect(Array.isArray(response.body)).toBeTruthy();
+                expect(response.body.length).toEqual(0);
+            }).catch(async (error) => {
+                console.log(error)
+            });
+    }, 20000);
+
+    test("should return status code 404 if the teacher id is not defined (null)", async () => {
+        await supertest(server).get(`/api/users/classes/courses/all/`)
+            .expect(404)
+            .then()
+            .catch(async (error) => {
+                console.log(error)
+            });
+    }, 20000);
+});
