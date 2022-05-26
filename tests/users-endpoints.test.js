@@ -7,7 +7,7 @@ const saveTeacherToDB = () => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, db) => {
             let query =
-                'INSERT INTO heroku_f94932c1d70fb93.users (first_name, last_name, email, user_role, password, class_id) ' +
+                'INSERT INTO users (first_name, last_name, email, user_role, password, class_id) ' +
                 'VALUES ("Kane", "Vasquez", "tester@yhoo.com", "TEACHER", "$2b$15$PGfdEXxNY2M.OSsh1mjIFuy9Tg32Z3Cc5QkKPGIW5f.DNVXpGYwOa", NULL);';
             db.query(query, (error, result, fields) => {
                 if (error) {
@@ -29,7 +29,7 @@ const saveLectureToDB = (teacherId, dateTime) => {
     }
     return new Promise((resolve, reject) => {
         pool.getConnection((err, db) => {
-            let query = `INSERT INTO heroku_f94932c1d70fb93.lectures (teacher_id, start_date_time, course_id, class_id) VALUES (${teacherId},"${dateTime}", 1, 1);`;
+            let query = `INSERT INTO lectures (teacher_id, start_date_time, course_id, class_id) VALUES (${teacherId},"${dateTime}", 1, 1);`;
             db.query(query, (error, result, fields) => {
                 if (error) {
                     reject(error);
@@ -45,7 +45,7 @@ const saveLectureToDB = (teacherId, dateTime) => {
 const deleteLectureFromDB = (teacherId) => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, db) => {
-            let query = `DELETE FROM heroku_f94932c1d70fb93.lectures WHERE teacher_id = ${teacherId};`;
+            let query = `DELETE FROM lectures WHERE teacher_id = ${teacherId};`;
             db.query(query, (error, result, fields) => {
                 if (!error) {
                     resolve(true);
@@ -61,7 +61,7 @@ const deleteLectureFromDB = (teacherId) => {
 const deleteTeacherFromDB = (teacherId) => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, db) => {
-            let query = `DELETE FROM heroku_f94932c1d70fb93.users WHERE user_id = ${teacherId};`;
+            let query = `DELETE FROM users WHERE user_id = ${teacherId};`;
             db.query(query, (error, result, fields) => {
                 if (!error) {
                     resolve(true);
