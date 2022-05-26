@@ -1,5 +1,5 @@
-const handleStudentStats = require('../routes/users').handleStudentStats;
-const calculateClassAttendanceBetweenDates = require('../routes/users').calculateClassAttendanceBetweenDates;
+const { handleStudentStats } = require('../routes/users');
+const { calculateClassAttendanceBetweenDates } = require('../routes/users');
 
 describe('test handleStudentStats()', () => {
   // all test cases have 3 parameters: description of test; array made of the attendance records; result object
