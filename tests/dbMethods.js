@@ -17,19 +17,18 @@ const saveTeacherToDB = () => {
     })
 }
 
-const saveLectureToDB = (teacherId, dateTime) => {
+const saveLectureToDB = (teacherId, dateTime, courseId, classId) => {
     let lecture = {
         lecture_id: undefined,
         start_date_time: dateTime,
-        course_id: 1,
-        class_id: 1,
+        course_id: courseId,
+        class_id: classId,
     }
     return new Promise((resolve, reject) => {
         pool.getConnection((err, db) => {
-            let query = `INSERT INTO lectures (teacher_id, start_date_time, course_id, class_id) VALUES (${teacherId},"${dateTime}", 1, 1);`;
+            let query = `INSERT INTO lectures (teacher_id, start_date_time, course_id, class_id) VALUES (${teacherId},"${dateTime}", ${courseId}, ${classId});`;
             db.query(query, (error, result, fields) => {
                 if (error) {
-                    console.log('error inserting lecture...')
                     reject(error);
                 }
                 lecture.lecture_id = result.insertId;
@@ -40,17 +39,30 @@ const saveLectureToDB = (teacherId, dateTime) => {
     })
 }
 
-const saveCoursesToDB = () => {
+const saveCourseToDB = (id, name) => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, db) => {
-            let query = `INSERT INTO courses (course_id, name) VALUES (1, 'Development of Large Systems'),(2, 'Databases for Developers'),(3, 'Testing');`;
+            let query = `INSERT INTO courses (course_id, name) VALUES (${id}, '${name}');`;
             db.query(query, (error, result, fields) => {
                 if (error) {
-                    console.log('error inserting courses...')
                     reject(error);
-                } else {
-                    resolve(true);
                 }
+                resolve(true);
+            });
+            db.release();
+        });
+    })
+}
+
+const saveClassToDB = (id, name) => {
+    return new Promise((resolve, reject) => {
+        pool.getConnection((err, db) => {
+            let query = `INSERT INTO classes (class_id, name) VALUES (${id}, '${name}');`;
+            db.query(query, (error, result, fields) => {
+                if (error) {
+                    reject(error);
+                }
+                resolve(true);
             });
             db.release();
         });
@@ -64,9 +76,8 @@ const deleteLecturesFromDB = () => {
             db.query(query, (error, result, fields) => {
                 if (error) {
                     reject(error);
-                } else {
-                    resolve(true);
                 }
+                resolve(true);
             });
             db.release();
         });
@@ -80,9 +91,8 @@ const deleteTeachersFromDB = () => {
             db.query(query, (error, result, fields) => {
                 if (error) {
                     reject(error);
-                } else {
-                    resolve(true);
                 }
+                resolve(true);
             });
             db.release();
         });
@@ -96,9 +106,23 @@ const deleteCoursesFromDB = () => {
             db.query(query, (error, result, fields) => {
                 if (error) {
                     reject(error);
-                } else {
-                    resolve(true);
                 }
+                resolve(true);
+            });
+            db.release();
+        });
+    })
+}
+
+const deleteClassesFromDB = () => {
+    return new Promise((resolve, reject) => {
+        pool.getConnection((err, db) => {
+            let query = `DELETE FROM classes;`;
+            db.query(query, (error, result, fields) => {
+                if (error) {
+                    reject(error);
+                }
+                resolve(true);
             });
             db.release();
         });
@@ -106,10 +130,12 @@ const deleteCoursesFromDB = () => {
 }
 
 module.exports = {
-    saveCoursesToDB,
+    saveCourseToDB,
     saveLectureToDB,
     saveTeacherToDB,
     deleteCoursesFromDB,
     deleteLecturesFromDB,
     deleteTeachersFromDB,
+    saveClassToDB,
+    deleteClassesFromDB,
 }
