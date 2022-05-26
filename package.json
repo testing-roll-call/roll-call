@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "test": "jest --verbose --coverage",
-    "start": "node app.js"
+    "start": "node app.js",
+    "sonar": "npx sonar-scanner"
   },
   "repository": {
     "type": "git",
@@ -25,12 +26,25 @@
     "express": "^4.17.3",
     "express-session": "^1.17.2",
     "jest": "^28.1.0",
+    "jest-sonar-reporter": "^2.0.0",
     "jsonwebtoken": "^8.5.1",
     "mysql2": "^2.3.3",
     "node-fetch": "^2.6.6",
     "socket.io": "^4.5.0",
     "socket.io-client": "^4.5.0"
   },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverage": true,
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ],
+    "testResultsProcessor": "jest-sonar-reporter"
+  },
+  "jestSonar": {
+    "reportPath": "coverage",
+    "reportFile": "test-reporter.xml",
+    "indent": 4
   "prettier": {
     "singleQuote": true,
     "trailingComma": "none",
