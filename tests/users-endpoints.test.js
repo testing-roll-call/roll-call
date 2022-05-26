@@ -72,43 +72,47 @@ const deleteTeacherFromDB = (teacherId) => {
     })
 }
 
-test("GET /api/users/lectures/:teacherId", async () => {
-    const dateTime = getDateTime();
-    const teacherId = await saveTeacherToDB();
-    const lecture = await saveLectureToDB(teacherId, dateTime);
-    await supertest(server).get(`/api/users/lectures/${teacherId}`)
-        .expect(200)
-        .then((response) => {
-            expect(Array.isArray(response.body)).toBeTruthy();
-            expect(response.body.lecture_id).toEqual(lecture.lecture_id);
-            expect(response.body.start_date_time).toEqual(dateTime);
-            expect(response.body.name).toEqual('Development of Large Systems');
-        }).catch(async () => {
-            await deleteLectureFromDB(teacherId);
-            await deleteTeacherFromDB(teacherId);
-        });
-    await deleteLectureFromDB(teacherId);
-    await deleteTeacherFromDB(teacherId);
-}, 20000);
+describe('teacher tests', () => {
 
-test("GET /api/users/classes/courses/all/:teacherId", async () => {
-    const dateTime = getDateTime();
-    const teacherId = await saveTeacherToDB();
-    const lecture = await saveLectureToDB(teacherId, dateTime);
-    await supertest(server).get(`/api/users/classes/courses/all/${teacherId}`)
-        .expect(200)
-        .then((response) => {
-            expect(Array.isArray(response.body)).toBeTruthy();
-            expect(response.body.course_id).toEqual(1);
-            expect(response.body.class_id).toEqual(1);
-            expect(response.body.courseName).toEqual('Development of Large Systems');
-        }).catch(async () => {
-            await deleteLectureFromDB(teacherId);
-            await deleteTeacherFromDB(teacherId);
-        });
-    await deleteLectureFromDB(teacherId);
-    await deleteTeacherFromDB(teacherId);
-}, 20000);
+    test("GET /api/users/lectures/:teacherId", async () => {
+        const dateTime = getDateTime();
+        const teacherId = await saveTeacherToDB();
+        const lecture = await saveLectureToDB(teacherId, dateTime);
+        await supertest(server).get(`/api/users/lectures/${teacherId}`)
+            .expect(200)
+            .then((response) => {
+                expect(Array.isArray(response.body)).toBeTruthy();
+                expect(response.body.lecture_id).toEqual(lecture.lecture_id);
+                expect(response.body.start_date_time).toEqual(dateTime);
+                expect(response.body.name).toEqual('Development of Large Systems');
+            }).catch(async () => {
+                await deleteLectureFromDB(teacherId);
+                await deleteTeacherFromDB(teacherId);
+            });
+        await deleteLectureFromDB(teacherId);
+        await deleteTeacherFromDB(teacherId);
+    }, 20000);
+
+    test("GET /api/users/classes/courses/all/:teacherId", async () => {
+        const dateTime = getDateTime();
+        const teacherId = await saveTeacherToDB();
+        const lecture = await saveLectureToDB(teacherId, dateTime);
+        await supertest(server).get(`/api/users/classes/courses/all/${teacherId}`)
+            .expect(200)
+            .then((response) => {
+                expect(Array.isArray(response.body)).toBeTruthy();
+                expect(response.body.course_id).toEqual(1);
+                expect(response.body.class_id).toEqual(1);
+                expect(response.body.courseName).toEqual('Development of Large Systems');
+            }).catch(async () => {
+                await deleteLectureFromDB(teacherId);
+                await deleteTeacherFromDB(teacherId);
+            });
+        await deleteLectureFromDB(teacherId);
+        await deleteTeacherFromDB(teacherId);
+    }, 20000);
+
+});
 
 // return a string representing a datetime on the same day
 const getDateTime = () => {
