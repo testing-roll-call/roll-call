@@ -68,7 +68,7 @@ const saveCoursesToDB = () => {
     })
 }
 
-const deleteLectureFromDB = (teacherId) => {
+const deleteLectureFromDB = () => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, db) => {
             let query = `DELETE FROM lectures;`;
