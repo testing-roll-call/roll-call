@@ -131,7 +131,7 @@ describe('teacher tests', () => {
                 expect(response.body.start_date_time).toEqual(dateTime);
                 expect(response.body.name).toEqual('Development of Large Systems');
             }).catch(async (error) => {
-                console.log(error.stack());
+                console.log(error)
             });
         await deleteLectureFromDB(teacherId);
         await deleteTeacherFromDB(teacherId);
@@ -151,7 +151,7 @@ describe('teacher tests', () => {
                 expect(response.body.class_id).toEqual(1);
                 expect(response.body.courseName).toEqual('Development of Large Systems');
             }).catch(async (error) => {
-                console.log(error.stack())
+                console.log(error)
             });
         await deleteLectureFromDB(teacherId);
         await deleteTeacherFromDB(teacherId);
