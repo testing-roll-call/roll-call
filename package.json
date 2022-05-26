@@ -4,7 +4,7 @@
   "description": "Mandatory 2 for class development of large systems",
   "main": "index.js",
   "scripts": {
-    "test": "jest --verbose --coverage",
+    "test": "jest --runInBand --verbose --coverage",
     "start": "node index.js"
   },
   "repository": {
