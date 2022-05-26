@@ -73,9 +73,9 @@ describe('register test', () => {
                 .then((response) => {
                     expect(response.body).toBeTruthy();
                     expect(response.body.message).toEqual(expected);
-                }).catch(async () => {
-                    console.log('error');
-                })
+                }).catch( (e) => {
+                    throw e.stack;
+                });
                 await deleteUserFromDB();
         }, 20000);
     });
@@ -88,9 +88,9 @@ describe('register test', () => {
                 .then((response) => {
                     expect(response.body).toBeTruthy();
                     expect(response.body.message).toEqual(expected);
-                }).catch(async () => {
-                    console.log('error');
-                })
+                }).catch( (e) => {
+                    throw e.stack;
+                });
                 await deleteUserFromDB();
         }, 20000);
     });

@@ -38,8 +38,8 @@ describe('login test', () => {
                     expect(response.body.email).toEqual("v-kane@yahoo.com");
                     expect(response.body.firstName).toEqual("Dagmara");
                     expect(response.body.firstName).toEqual("Przygocka");
-                }).catch(async () => {
-                    console.log('error');
+                }).catch( (e) => {
+                    throw e.stack;
                 });
                 await deleteUserFromDB();
         }, 20000);
@@ -54,9 +54,9 @@ describe('login test', () => {
                 .then((response) => {
                     expect(response.body).toBeTruthy();
                     expect(response.body.message).toEqual(expected);
-                }).catch(async () => {
-                    console.log('error');
-                })
+                }).catch( (e) => {
+                    throw e.stack;
+                });
                 await deleteUserFromDB();
         }, 20000);
     });

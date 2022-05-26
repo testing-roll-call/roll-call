@@ -24,6 +24,8 @@ describe('teacherStatistics test', () => {
                 expect(response.body.studentsAttendance['m-mckay5458@yahoo.net'].firstName).toEqual('Mira');
                 expect(response.body.studentsAttendance['m-mckay5458@yahoo.net'].lastName).toEqual('Mckay');
                 expect(response.body.studentsAttendance['m-mckay5458@yahoo.net'].attendance).toEqual("50.00");
+            }).catch( (e) => {
+                throw e.stack;
             });
             await deleteData();
     }, 20000);
@@ -84,6 +86,8 @@ describe('teacherStatistics test', () => {
                 .then((response) => {
                     expect((response.body)).toBeTruthy();
                     expect(response.body.message).toEqual(expected);
+                }).catch( (e) => {
+                    throw e.stack;
                 });
                 await deleteData();
         }, 20000);
