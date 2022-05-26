@@ -164,7 +164,6 @@ router.get('/api/users/lectures/:teacherId', (req, res) => {
         var yyyy = today.getFullYear();
         let query = 'SELECT lectures.lecture_id, courses.name, lectures.start_date_time from courses join lectures on courses.course_id = lectures.course_id where lectures.teacher_id = ? AND DATE(lectures.start_date_time) = ?;';
         db.query(query, [req.params.teacherId, `${yyyy}-${mm}-${dd}`], async (error, result, fields) => {
-            console.log(result);
             if (result && result.length) {
                 const todayClasses = result.map(c => { return { lecture_id: c.lecture_id, name: c.name, start_date_time: c.start_date_time } });
                 res.send(todayClasses);
