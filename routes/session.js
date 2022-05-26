@@ -53,5 +53,5 @@ router.delete('/destroysession', (req, res) => {
 });
 
 module.exports = {
-  router
+  router,
 };

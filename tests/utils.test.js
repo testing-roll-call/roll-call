@@ -1,4 +1,5 @@
 const { Utils } = require('../models/Utils');
+
 const Utilities = new Utils();
 
 describe('generateCode test', () => {

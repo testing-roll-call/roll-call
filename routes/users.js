@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const bcrypt = require('bcrypt');
 const { pool } = require('../database/connection');
 
 async function getTeacher(db, teacher_id) {
@@ -18,7 +19,7 @@ async function getTeacher(db, teacher_id) {
   return result;
 }
 
-//get attendance for student by student id
+// get attendance for student by student id
 router.get('/api/users/students/attendance/:studentId', (req, res) => {
   pool.getConnection((err, db) => {
     let query =
@@ -48,7 +49,7 @@ router.get('/api/users/students/attendance/:studentId', (req, res) => {
         res.send(handleStudentStats(attendance));
       } else {
         res.send({
-          message: 'Something went wrong'
+          message: 'Something went wrong',
         });
       }
     });
@@ -59,7 +60,7 @@ router.get('/api/users/students/attendance/:studentId', (req, res) => {
 function handleStudentStats(attendance) {
   const userStats = {
     firstName: attendance[0].firstName,
-    lastName: attendance[0].lastName
+    lastName: attendance[0].lastName,
   };
   attendance.map((value) => {
     if (userStats[value.courseName]) {
@@ -81,7 +82,7 @@ function handleStudentStats(attendance) {
   return userStats;
 }
 
-//show number of students in the class
+// show number of students in the class
 router.get('/api/users/students/:classId', (req, res) => {
   pool.getConnection((err, db) => {
     let query =
@@ -91,7 +92,7 @@ router.get('/api/users/students/:classId', (req, res) => {
         res.send(result[0]);
       } else {
         res.send({
-          message: 'Something went wrong'
+          message: 'Something went wrong',
         });
       }
     });
@@ -126,7 +127,7 @@ router.get('/api/users/lectures/:teacherId', (req, res) => {
   });
 });
 
-//get all classes and courses combinations for teacher statistics dropdown
+// get all classes and courses combinations for teacher statistics dropdown
 router.get('/api/users/classes/courses/all/:teacherId', (req, res) => {
   pool.getConnection((err, db) => {
     let query =
@@ -136,7 +137,7 @@ router.get('/api/users/classes/courses/all/:teacherId', (req, res) => {
         res.send(result);
       } else {
         res.send({
-          message: 'Something went wrong'
+          message: 'Something went wrong',
         });
       }
     });
@@ -144,7 +145,7 @@ router.get('/api/users/classes/courses/all/:teacherId', (req, res) => {
   });
 });
 
-//get attendance for teacher page by teacher id
+// get attendance for teacher page by teacher id
 router.post('/api/users/teachers/attendance/:teacherId', (req, res) => {
   pool.getConnection((err, db) => {
     let query = `SELECT users.first_name, users.last_name, users.email, lectures.start_date_time, attendance.is_attending
@@ -215,7 +216,7 @@ router.post('/api/users/teachers/attendance/:teacherId', (req, res) => {
     db.release();
   });
 });
-//if it is split it will loop through whole result set multiple times, else these methods could be joined into 1, but then 1 method will do many things
+// if it is split it will loop through whole result set multiple times, else these methods could be joined into 1, but then 1 method will do many things
 function calculateClassAttendanceBetweenDates(attendance, date, oldDate) {
   let attending = 0;
   let notAttending = 0;
@@ -259,5 +260,5 @@ function calculateStudentsAttendance(attendance) {
 }
 
 module.exports = {
-  router
+  router,
 };

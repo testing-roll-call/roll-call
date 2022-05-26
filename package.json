@@ -6,6 +6,7 @@
   "scripts": {
     "test": "jest --verbose --coverage",
     "start": "node app.js",
+    "lint": "eslint . --fix"
     "sonar": "npx sonar-scanner"
   },
   "repository": {
@@ -23,6 +24,7 @@
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
+    "eslint-plugin-jest": "^26.2.2",
     "express": "^4.17.3",
     "express-session": "^1.17.2",
     "jest": "^28.1.0",
@@ -33,6 +35,10 @@
     "socket.io": "^4.5.0",
     "socket.io-client": "^4.5.0"
   },
+  "devDependencies": {
+    "eslint": "^8.15.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.26.0"
   "jest": {
     "testEnvironment": "node",
     "collectCoverage": true,
