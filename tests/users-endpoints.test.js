@@ -3,6 +3,14 @@ const supertest = require("supertest");
 
 const {pool} = require('../database/connection');
 
+// returns a string representing a datetime on the same day
+const getDateTime = () => {
+    const today = new Date();
+    const date = today.getFullYear() + '-' + String((today.getMonth() + 1)).padStart(2, '0') + '-' + String((today.getDate())).padStart(2, '0');
+    const time = String(today.getHours() + 5).padStart(2, '0') + ':' + String(today.getMinutes()).padStart(2, '0') + ':' + String(today.getSeconds()).padStart(2, '0');
+    return `${date} ${time}`;
+}
+
 const saveTeacherToDB = () => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, db) => {
@@ -32,6 +40,7 @@ const saveLectureToDB = (teacherId, dateTime) => {
             let query = `INSERT INTO lectures (teacher_id, start_date_time, course_id, class_id) VALUES (${teacherId},"${dateTime}", 1, 1);`;
             db.query(query, (error, result, fields) => {
                 if (error) {
+                    console.log('error inserting lecture...')
                     reject(error);
                 }
                 lecture.lecture_id = result.insertId;
@@ -42,15 +51,16 @@ const saveLectureToDB = (teacherId, dateTime) => {
     })
 }
 
-const deleteLectureFromDB = (teacherId) => {
+const saveCoursesToDB = () => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, db) => {
-            let query = `DELETE FROM lectures WHERE teacher_id = ${teacherId};`;
+            let query = `INSERT INTO courses (course_id, name) VALUES (1, 'Development of Large Systems'),(2, 'Databases for Developers'),(3, 'Testing');`;
             db.query(query, (error, result, fields) => {
-                if (!error) {
-                    resolve(true);
-                } else {
+                if (error) {
+                    console.log('error inserting courses...')
                     reject(error);
+                } else {
+                    resolve(true);
                 }
             });
             db.release();
@@ -58,12 +68,46 @@ const deleteLectureFromDB = (teacherId) => {
     })
 }
 
-const deleteTeacherFromDB = (teacherId) => {
+const deleteLectureFromDB = (teacherId) => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, db) => {
-            let query = `DELETE FROM users WHERE user_id = ${teacherId};`;
+            let query = `DELETE FROM lectures;`;
             db.query(query, (error, result, fields) => {
-                if (!error) {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(true);
+                }
+            });
+            db.release();
+        });
+    })
+}
+
+const deleteTeacherFromDB = () => {
+    return new Promise((resolve, reject) => {
+        pool.getConnection((err, db) => {
+            let query = `DELETE FROM users;`;
+            db.query(query, (error, result, fields) => {
+                if (error) {
+                    reject(error);
+               } else {
+                    resolve(true);
+                }
+            });
+            db.release();
+        });
+    })
+}
+
+const deleteCoursesFromDB = () => {
+    return new Promise((resolve, reject) => {
+        pool.getConnection((err, db) => {
+            let query = `DELETE FROM courses;`;
+            db.query(query, (error, result, fields) => {
+                if (error) {
+                    reject(error);
+                } else {
                     resolve(true);
                 }
             });
@@ -76,6 +120,7 @@ describe('teacher tests', () => {
 
     test("GET /api/users/lectures/:teacherId", async () => {
         const dateTime = getDateTime();
+        await saveCoursesToDB();
         const teacherId = await saveTeacherToDB();
         const lecture = await saveLectureToDB(teacherId, dateTime);
         await supertest(server).get(`/api/users/lectures/${teacherId}`)
@@ -88,13 +133,16 @@ describe('teacher tests', () => {
             }).catch(async () => {
                 await deleteLectureFromDB(teacherId);
                 await deleteTeacherFromDB(teacherId);
+                await deleteCoursesFromDB();
             });
         await deleteLectureFromDB(teacherId);
         await deleteTeacherFromDB(teacherId);
+        await deleteCoursesFromDB();
     }, 20000);
 
     test("GET /api/users/classes/courses/all/:teacherId", async () => {
         const dateTime = getDateTime();
+        await saveCoursesToDB();
         const teacherId = await saveTeacherToDB();
         const lecture = await saveLectureToDB(teacherId, dateTime);
         await supertest(server).get(`/api/users/classes/courses/all/${teacherId}`)
@@ -107,17 +155,15 @@ describe('teacher tests', () => {
             }).catch(async () => {
                 await deleteLectureFromDB(teacherId);
                 await deleteTeacherFromDB(teacherId);
+                await deleteCoursesFromDB();
             });
         await deleteLectureFromDB(teacherId);
         await deleteTeacherFromDB(teacherId);
+        await deleteCoursesFromDB();
     }, 20000);
 
-});
+    afterAll(()=> {
+        pool.end();
+    });
 
-// return a string representing a datetime on the same day
-const getDateTime = () => {
-    const today = new Date();
-    const date = today.getFullYear() + '-' + String((today.getMonth() + 1)).padStart(2, '0') + '-' + String((today.getDate())).padStart(2, '0');
-    const time = String(today.getHours() + 5).padStart(2, '0') + ':' + String(today.getMinutes()).padStart(2, '0') + ':' + String(today.getSeconds()).padStart(2, '0');
-    return `${date} ${time}`;
-}
+});
