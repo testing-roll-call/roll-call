@@ -5,8 +5,8 @@
   "main": "app.js",
   "scripts": {
     "test": "jest --verbose --coverage",
-    "start": "node app.js"
-    "dev": "nodemon app.js"
+    "start": "node app.js",
+    "dev": "nodemon index.js"
   },
   "repository": {
     "type": "git",
@@ -35,7 +35,7 @@
   "prettier": {
     "singleQuote": true,
     "trailingComma": "none",
-    "printWidth": 90
+    "printWidth": 90,
     "socket.io": "^4.5.0"
   },
   "devDependencies": {
