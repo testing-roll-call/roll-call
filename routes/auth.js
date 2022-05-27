@@ -141,7 +141,7 @@ router.post('/api/users/login', (req, res) => {
               };
 
               const accessToken = jwt.sign(user, process.env.JWT_SECRET, {
-                expiresIn: '10s'
+                expiresIn: '1d'
               });
 
               const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, {

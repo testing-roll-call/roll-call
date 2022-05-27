@@ -260,5 +260,7 @@ function calculateStudentsAttendance(attendance) {
 }
 
 module.exports = {
-  router,
-};
+    router,
+    handleStudentStats,
+    calculateClassAttendanceBetweenDates
+  };
