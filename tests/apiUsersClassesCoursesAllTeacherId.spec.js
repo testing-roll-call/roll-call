@@ -44,7 +44,7 @@ describe('GET /api/users/classes/courses/all/:teacherId', () => {
             });
     }, 20000);
 
-    test("should get multiple courses for a given teacher", async () => {
+    test("should get multiple courses for a teacher", async () => {
         const dateTime = formatDate(new Date());
         await saveCourseToDB(1, 'Development of Large Systems');
         await saveCourseToDB(2, 'Testing');
