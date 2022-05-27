@@ -19,7 +19,7 @@ router.get('/refresh', (req, res) => {
           jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, payload) => {
             if (err || result[0].email !== payload.email) return res.sendStatus(403);
 
-            console.log("payload", payload);
+            console.log('payload', payload);
 
             const user = {
               id: payload.id,
@@ -47,7 +47,8 @@ router.get('/refresh', (req, res) => {
 });
 
 router.post('/api/users/register', (req, res) => {
-  const { email, password, firstName, lastName, userRole, classId } = req.body;
+  const { email, password, firstName, lastName, dateOfBirth, userRole, classId } =
+    req.body;
 
   try {
     if (!userRole || (userRole !== 'TEACHER' && userRole !== 'STUDENT')) {
@@ -55,17 +56,19 @@ router.post('/api/users/register', (req, res) => {
         message: 'Please choose the role: TEACHER or STUDENT.'
       });
       return;
+    } else if (userRole === 'STUDENT') {
+      checkAge(dateOfBirth);
     }
 
     bcrypt.hash(password, saltRounds, (error, hash) => {
       if (!error) {
         pool.getConnection((err, db) => {
           let query =
-            'INSERT INTO users (user_role, email, password, first_name, last_name, class_id) VALUES (?, ?, ?, ?, ?, ?)';
+            'INSERT INTO users (user_role, email, password, first_name, last_name, date_of_birth, class_id) VALUES (?, ?, ?, ?, ?, ?, ?)';
 
           db.query(
             query,
-            [userRole, email, hash, firstName, lastName, classId],
+            [userRole, email, hash, firstName, lastName, dateOfBirth, classId],
             (error, result, fields) => {
               if (result && result.affectedRows === 1) {
                 const accessToken = jwt.sign(
@@ -214,6 +217,19 @@ router.get('/logout', (req, res) => {
   }
 });
 
+// check if student is above 19 years old
+const checkAge = (dateOfBirth) => {
+  if (Object.prototype.toString.call(dateOfBirth) === '[object Date]') {
+    let pastDate = new Date();
+    pastDate.setFullYear(pastDate.getFullYear() - 19);
+
+    return pastDate >= dateOfBirth;
+  } else {
+    throw new Error('Invalid format');
+  }
+};
+
 module.exports = {
+  checkAge,
   router
 };

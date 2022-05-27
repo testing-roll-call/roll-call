@@ -114,7 +114,7 @@ router.get('/api/users/lectures/:teacherId', (req, res) => {
       [req.params.teacherId, `${yyyy}-${mm}-${dd}`],
       async (error, result, fields) => {
         if (result && result.length) {
-          console.log("teach", req.params.teacherId);
+          console.log('teach', req.params.teacherId);
           res.send(result);
         } else {
           res.send({
@@ -230,20 +230,26 @@ function calculateClassAttendanceBetweenDates(attendance, date, oldDate) {
 }
 
 function calculateStudentsAttendance(attendance) {
-  const userAttendance = {};
-  attendance.map((user) => {
-    if (userAttendance[user.email]) {
-      ++userAttendance[user.email][0];
-      user.isAttending ? ++userAttendance[user.email][1] : '';
-    } else {
-      userAttendance[user.email] = [
-        1,
-        user.isAttending ? 1 : 0,
-        user.firstName,
-        user.lastName
-      ];
-    }
-  });
+  const userAttendance = [];
+
+  if (attendance && attendance.length && Array.isArray(attendance)) {
+    attendance.map((user) => {
+      if (userAttendance[user.email]) {
+        ++userAttendance[user.email][0];
+        user.isAttending ? ++userAttendance[user.email][1] : '';
+      } else {
+        userAttendance[user.email] = [
+          1,
+          user.isAttending ? 1 : 0,
+          user.firstName,
+          user.lastName
+        ];
+      }
+    });
+  } else {
+    throw new Error('Unrecognized Student');
+  }
+
   Object.keys(userAttendance).forEach((key) => {
     if (userAttendance[key][0] === 0 || !userAttendance[key][0])
       userAttendance[key][0] = 1; //avoid division by 0
@@ -262,5 +268,6 @@ function calculateStudentsAttendance(attendance) {
 module.exports = {
     router,
     handleStudentStats,
-    calculateClassAttendanceBetweenDates
-  };
+    calculateClassAttendanceBetweenDates,
+  calculateStudentsAttendance
+};
