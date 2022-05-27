@@ -63,7 +63,7 @@ describe('GET /api/users/lectures/:teacherId', () => {
             .then((response) => {
                 expect(Array.isArray(response.body)).toBeTruthy();
                 expect(response.body[0].lecture_id).toEqual(lecture1.lecture_id);
-                const localDate1 = new Date(response.body[0].start_date_time);
+                const localDate1 = new Date(response.body[0].start_date_time); // we get time from server in UTC, new Date() converts it to local time
                 expect(formatDate(localDate1)).toEqual(nowFormatted);
                 expect(response.body[0].name).toEqual('Development of Large Systems');
 
@@ -71,6 +71,25 @@ describe('GET /api/users/lectures/:teacherId', () => {
                 const localDate2 = new Date(response.body[1].start_date_time);
                 expect(formatDate(localDate2)).toEqual(after2hoursFormatted);
                 expect(response.body[1].name).toEqual('Testing');
+            }).catch(async (error) => {
+                console.log(error)
+            });
+    }, 20000);
+
+    test("should get empty array if the date is other than today", async () => {
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowFormatted = formatDate(tomorrow);
+        await saveCourseToDB(1, 'Development of Large Systems');
+        const teacherId = await saveTeacherToDB();
+        await saveClassToDB(1, 'SD22w');
+        await saveLectureToDB(teacherId, tomorrowFormatted, 1, 1);
+        await supertest(server).get(`/api/users/lectures/${teacherId}`)
+            .expect(200)
+            .then((response) => {
+                expect(Array.isArray(response.body)).toBeFalsy();
+                expect(response.body.message).toEqual('Something went wrong');
             }).catch(async (error) => {
                 console.log(error)
             });
