@@ -18,6 +18,9 @@ jobs:
       - run: #install dependencies
           name: Install npm dependencies
           command: npm install --save
+      - run: #run tests all test and create covergae report
+          name: Run Unit Tests
+          command: npm test
       - sonarcloud/scan
       
 
