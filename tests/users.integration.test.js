@@ -191,7 +191,11 @@ const deleteCoursesFromDB = () => {
 //         pool.end();
 //     });
 // });
-
+describe('student test test tests', () => {
+        test(`get random number from default to default exclusive, try number:`, () => {
+          expect(1).toEqual(1);
+        });
+});
 /*
 describe('student integration tests', () => {
   // make it as a transaction
