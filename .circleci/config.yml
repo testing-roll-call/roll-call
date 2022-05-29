@@ -6,8 +6,7 @@ orbs:
   node: circleci/node@4.7.0
 #Heroku orb contains a set of prepackaged CircleCI configurations you can use to deploy applications to Heroku
   heroku: circleci/heroku@1.2.6
-  orbs: 
-  sonarscanner: psl/sonarscanner@0.0.4
+  sonarcloud: sonarsource/sonarcloud@1.0.3
 # building blocks of config
 jobs:
   run_tests:
@@ -19,14 +18,11 @@ jobs:
       - run: #install dependencies
           name: Install npm dependencies
           command: npm install --save
-      - run:
-          name: Install Sonarqube scanner
-          command:
-              wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.2.0.1873.zip
-              unzip sonar-scanner-cli-4.2.0.1873.zip
-      - run:
-          name: Run Sonarqube scanner
-          command: npx sonar-scanner
+      - run: #run tests all test and create covergae report
+          name: Run Unit Tests
+          command: npm test
+      - sonarcloud/scan
+      
 
 workflows: #r
   # build:
@@ -35,6 +31,8 @@ workflows: #r
   heroku_deploy:
     jobs:
       - run_tests
+      - build:
+          context: SonarCloud
       - heroku/deploy-via-git:
           requires:
             - run_tests
