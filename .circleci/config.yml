@@ -30,7 +30,7 @@ workflows: #r
   #     - run_tests
   heroku_deploy:
     jobs:
-      - run_tests
+      - run_tests:
           context: SonarCloud
       - heroku/deploy-via-git:
           requires:
