@@ -4,7 +4,6 @@ require('dotenv').config();
 
 // const cert = fs.readFileSync('database/BaltimoreCyberTrustRoot.crt.pem');
 const test = process.env.ENV;
-console.log(test);
 
 const config = {
   host: process.env.AZURE_HOST,
@@ -13,7 +12,9 @@ const config = {
   database:
     test === 'test' ? process.env.AZURE_TEST_DATABASE : process.env.AZURE_DATABASE,
   port: 3306,
-  connectionLimit: 10
+  connectionLimit: 10,
+  multipleStatements: test === 'test',
+  timezone: 'UTC'
   // ssl: { ca: cert }
 };
 
