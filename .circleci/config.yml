@@ -9,19 +9,27 @@ orbs:
 # building blocks of config
 jobs:
   run_tests:
-    executor: node/default # use the default executor defined within the orb
-    docker:
+    executor: node/default # use the default executor defined within the orb, def where the source code will run
+    docker: #other executers can be machine, macOS, windows
       - image: circleci/node:17.2.0
-    steps:
-      - checkout
-      - run:
+    steps: #list of steps will be executed
+      - checkout #git clone project
+      - run: #install dependencies
           name: Install npm dependencies
           command: npm install --save
-      - run:
+      - run: #run tests all test and create covergae report
           name: Run Unit Tests
           command: npm test
+      - run:
+        name: Install Sonarqube scanner
+        command: |
+            wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.2.0.1873.zip
+            unzip sonar-scanner-cli-4.2.0.1873.zip
+      - run:
+        name: Run Sonarqube scanner
+        command: npx sonar-scanner
 
-workflows:
+workflows: #r
   # build:
   #   jobs:
   #     - run_tests
