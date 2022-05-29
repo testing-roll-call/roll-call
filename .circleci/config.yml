@@ -23,8 +23,8 @@ jobs:
           name: Run Unit Tests
           command: npm test
       - run:
-        name: Run Sonarqube scanner
-        command: npx sonar-scanner
+          name: Run Sonarqube scanner
+          command: npx sonar-scanner
 
 workflows: #r
   # build:
