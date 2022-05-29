@@ -22,7 +22,7 @@ jobs:
           command: npm test
       - run:
         name: Install Sonarqube scanner
-        command: |
+        command:
             wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.2.0.1873.zip
             unzip sonar-scanner-cli-4.2.0.1873.zip
       - run:
