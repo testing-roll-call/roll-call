@@ -197,8 +197,8 @@ describe('test calculateClassAttendanceBetweenDates()', () => {
       'old date', // old date
       // expected results
       {message: 'Wrong data type'}
-    ] 
+    ] */
   ])('%s', (description, attendance, date, oldDate, result) => {
     expect(calculateClassAttendanceBetweenDates(attendance, date, oldDate)).toEqual(result);
-  }); */
+  });
 });
