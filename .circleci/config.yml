@@ -6,6 +6,8 @@ orbs:
   node: circleci/node@4.7.0
 #Heroku orb contains a set of prepackaged CircleCI configurations you can use to deploy applications to Heroku
   heroku: circleci/heroku@1.2.6
+  orbs: 
+  sonarscanner: psl/sonarscanner@0.0.4
 # building blocks of config
 jobs:
   run_tests:
