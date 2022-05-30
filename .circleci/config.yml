@@ -16,12 +16,14 @@ jobs:
       - run:
           name: Run Unit Tests
           command: npm test
-      - sonarcloud/scan  
+      - sonarcloud/scan 
+orbs:
+  sonarcloud: sonarsource/sonarcloud@1.0.3 
 workflows:
   heroku_deploy:
     jobs:
       - run_tests:
-          context: SonarCloud
+          context: sonarcloud
       - heroku/deploy-via-git:
           requires:
             - run_tests
