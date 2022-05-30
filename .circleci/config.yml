@@ -1,36 +1,29 @@
-#CircleCI version
 version: 2.1
-
 orbs:
-#set of prepackaged CircleCI configurations you can use to easily install Node.js and its package managers (npm, yarn)
   node: circleci/node@4.7.0
-#Heroku orb contains a set of prepackaged CircleCI configurations you can use to deploy applications to Heroku
   heroku: circleci/heroku@1.2.6
   sonarcloud: sonarsource/sonarcloud@1.0.3
-# building blocks of config
 jobs:
   run_tests:
-    executor: node/default # use the default executor defined within the orb, def where the source code will run
-    docker: #other executers can be machine, macOS, windows
+    executor: node/default
+    docker:
       - image: circleci/node:17.2.0
-    steps: #list of steps will be executed
-      - checkout #git clone project
-      - run: #install dependencies
+    steps:
+      - checkout
+      - run:
           name: Install npm dependencies
           command: npm install --save
-      - run: #run tests all test and create covergae report
+      - run:
           name: Run Unit Tests
           command: npm test
-      - sonarcloud/scan
-      
+      - sonarcloud/scan  
 
-workflows: #r
-  # build:
-  #   jobs:
-  #     - run_tests
+workflows:
   heroku_deploy:
     jobs:
       - run_tests
+      - sonarcloud
       - heroku/deploy-via-git:
           requires:
             - run_tests
+        
