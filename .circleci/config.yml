@@ -20,9 +20,11 @@ jobs:
 workflows:
   heroku_deploy:
     jobs:
-      - run_tests
+      - run_tests:
+        context: SONAR_TOKEN
       - heroku/deploy-via-git:
           requires:
-            - run_tests
+            - run_tests:
+              context: SONAR_TOKEN
 
         
