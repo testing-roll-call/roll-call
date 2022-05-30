@@ -22,7 +22,8 @@ workflows:
   heroku_deploy:
     jobs:
       - run_tests:
-          constext: sonarcloud
+          constext: 
+            - sonarcloud
       - heroku/deploy-via-git:
           requires:
             - run_tests
