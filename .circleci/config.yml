@@ -24,5 +24,7 @@ workflows:
         context: sonarcloud
       - heroku/deploy-via-git:
           requires:
-            - run_tests
+            - run_tests:
+              context: sonarcloud
+
         
